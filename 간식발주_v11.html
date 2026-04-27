@@ -1,0 +1,2167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>간식 발주 관리</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#f4f2ed;--sur:#fff;--bdr:#e2ddd5;--txt:#1a1814;--mu:#8a8478;
+  --ac:#2d5a3d;--acl:#e8f0eb;--ac2:#c4622d;
+  --yl:#fffbea;--sh:0 2px 12px rgba(0,0,0,.07);--sh2:0 8px 32px rgba(0,0,0,.12);
+  --red:#fee2e2;--purple:#5a3d9e;--purpll:#f0ebff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+nav{background:var(--ac);display:flex;align-items:center;height:50px;padding:0 14px;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.18);flex-shrink:0;gap:0}
+.brand{color:#fff;font-weight:900;font-size:14px;margin-right:16px;white-space:nowrap}
+.ntabs{display:flex;gap:2px;flex:1}
+.ntab{padding:4px 12px;border-radius:5px;border:none;background:transparent;color:rgba(255,255,255,.65);font-size:11px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}
+.ntab:hover{background:rgba(255,255,255,.12);color:#fff}
+.ntab.on{background:rgba(255,255,255,.22);color:#fff}
+.nav-r{display:flex;align-items:center;gap:6px;margin-left:auto}
+.nav-date{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:3px 10px;color:#fff;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.nav-date:hover{background:rgba(255,255,255,.25)}
+.io-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:5px;padding:3px 9px;color:#fff;font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Noto Sans KR',sans-serif}
+.io-btn:hover{background:rgba(255,255,255,.22)}
+
+.page{display:none;flex:1;overflow:hidden;flex-direction:column}
+.page.on{display:flex}
+
+/* ── 발주표 ── */
+.ord-wrap{display:flex;flex:1;overflow:hidden}
+.diet-pnl{width:250px;min-width:250px;background:var(--sur);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden}
+.pnl-hd{padding:10px 13px 7px;font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--mu);border-bottom:1px solid var(--bdr);background:var(--bg)}
+.diet-sc{overflow-y:auto;flex:1;padding:7px}
+.dc{background:var(--bg);border:1px solid var(--bdr);border-radius:8px;margin-bottom:5px;overflow:hidden}
+.dc-hd{display:flex;align-items:center;gap:6px;padding:7px 10px;cursor:pointer}
+.dc-hd:hover,.dc.op .dc-hd{background:var(--acl)}
+.dc-p{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--ac);min-width:42px}
+.dc-prev{flex:1;font-size:10px;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dc-body{padding:6px 10px 10px;border-top:1px solid var(--bdr);display:none}
+.dc.op .dc-body{display:block}
+.sn-row{display:flex;gap:4px;align-items:center;margin-bottom:4px}
+.sn-n{font-size:9px;font-weight:700;color:var(--mu);width:12px;text-align:center}
+.si{flex:1;border:1px solid var(--bdr);border-radius:4px;padding:4px 6px;font-size:11px;font-family:'Noto Sans KR',sans-serif;background:#fff;outline:none}
+.si:focus{border-color:var(--ac)}
+.btn-ap{width:100%;background:var(--ac);color:#fff;border:none;border-radius:4px;padding:5px;font-size:10px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-top:2px}
+.btn-ap:hover{opacity:.82}
+
+.mw-sec{border-top:1px solid var(--bdr);padding:8px 10px;background:#fffdf5}
+.mw-ttl{font-size:9px;font-weight:800;letter-spacing:.8px;color:#856404;text-transform:uppercase;margin-bottom:5px}
+.mw-in{width:100%;border:1px solid #ffc107;border-radius:4px;padding:4px 6px;font-size:11px;font-family:'Noto Sans KR',sans-serif;background:#fff;outline:none;margin-bottom:3px}
+.mw-in:focus{border-color:#e67e00}
+.mw-hint{font-size:9px;color:var(--mu);font-style:italic}
+
+.ord-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.tbar{padding:7px 14px;background:var(--sur);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:7px;flex-wrap:wrap;flex-shrink:0}
+.fb{padding:3px 9px;border-radius:20px;border:1px solid var(--bdr);background:#fff;font-size:10px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;color:var(--mu)}
+.fb.on,.fb:hover{background:var(--ac);color:#fff;border-color:var(--ac)}
+.btn-sv{background:var(--ac2);color:#fff;border:none;border-radius:5px;padding:4px 11px;font-size:10px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer}
+.btn-print{background:#fff;border:1px solid var(--bdr);border-radius:5px;padding:4px 10px;font-size:10px;font-weight:600;cursor:pointer;color:var(--mu);font-family:'Noto Sans KR',sans-serif}
+.btn-print:hover{background:var(--acl);color:var(--ac);border-color:var(--ac)}
+
+.tw{flex:1;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:11px}
+thead{position:sticky;top:0;z-index:10}
+thead th{background:#1a1814;color:#fff;padding:7px 8px;font-weight:700;font-size:9px;white-space:nowrap;text-align:center}
+thead th.tl{text-align:left}
+tbody tr{border-bottom:1px solid var(--bdr)}
+tbody tr:hover{background:var(--acl)}
+td{padding:4px 8px;vertical-align:middle;text-align:center}
+td.tl{text-align:left}
+.cb{display:inline-flex;width:18px;height:18px;border-radius:50%;color:#fff;font-size:9px;font-weight:800;align-items:center;justify-content:center}
+.ptag{font-family:'DM Mono',monospace;font-size:9px;background:#eae7df;border-radius:3px;padding:1px 4px;color:var(--mu)}
+.qi{width:44px;text-align:center;border:1px solid var(--bdr);border-radius:3px;padding:2px 4px;font-size:11px;font-family:'DM Mono',monospace;font-weight:700;color:var(--ac);outline:none;background:#fff}
+.qi:focus{border-color:var(--ac)}
+.sci{width:100%;min-width:90px;border:1px solid transparent;border-radius:3px;padding:2px 4px;font-size:10px;font-family:'Noto Sans KR',sans-serif;background:transparent;outline:none}
+.sci:hover{border-color:var(--bdr);background:#fff}
+.sci:focus{border-color:var(--ac);background:#fff}
+.sci.f{background:var(--yl)}
+.tc{font-family:'DM Mono',monospace;font-weight:700;font-size:10px;color:var(--mu)}
+.sep td{padding:3px 8px;background:var(--bg);font-size:8px;font-weight:800;letter-spacing:1.5px;color:var(--mu);text-transform:uppercase;border:none}
+.exc-r td:first-child{border-left:3px solid var(--ac2)}
+.mw-r{background:#fffdf0!important}
+
+.sumbar{background:var(--sur);border-top:2px solid var(--ac);padding:10px 16px;display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;flex-shrink:0}
+.sum-t{font-size:9px;font-weight:800;letter-spacing:1px;color:var(--mu);text-transform:uppercase;margin-bottom:5px}
+.sum-chips{display:flex;gap:5px;flex-wrap:wrap}
+.sum-chip{background:var(--acl);border:1px solid #c8dccb;border-radius:6px;padding:3px 9px;display:flex;align-items:center;gap:5px}
+.sum-nm{font-size:11px;font-weight:700;color:var(--ac)}
+.sum-c{font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:var(--ac2)}
+.grand{text-align:right;margin-left:auto}
+.grand-n{font-family:'DM Mono',monospace;font-size:22px;font-weight:900;color:var(--ac);line-height:1}
+.grand-l{font-size:9px;color:var(--mu);margin-top:1px}
+
+/* ── 달력 ── */
+.cal-top{padding:10px 16px;background:var(--sur);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0}
+.cal-top h2{font-size:13px;font-weight:800}
+.cn-btn{background:none;border:1px solid var(--bdr);border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer}
+.cn-btn:hover{background:var(--acl);color:var(--ac)}
+.cm-lbl{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;min-width:72px;text-align:center}
+.sch-sel{border:1px solid var(--bdr);border-radius:5px;padding:3px 8px;font-size:11px;font-family:'Noto Sans KR',sans-serif;outline:none;background:#fff}
+/* 검색형 학교 선택 위젯 */
+.sch-picker{position:relative;display:inline-block}
+.sch-picker-input{border:1px solid var(--bdr);border-radius:5px;padding:3px 24px 3px 8px;font-size:11px;font-family:'Noto Sans KR',sans-serif;outline:none;background:#fff;cursor:pointer;min-width:100px;max-width:160px}
+.sch-picker-input:focus{border-color:var(--ac)}
+.sch-picker-arrow{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--mu);pointer-events:none}
+.sch-picker-drop{position:absolute;top:calc(100% + 3px);left:0;z-index:999;background:#fff;border:1px solid var(--bdr);border-radius:7px;box-shadow:0 4px 16px rgba(0,0,0,.13);min-width:170px;max-width:220px;display:none;flex-direction:column;overflow:hidden}
+.sch-picker-drop.open{display:flex}
+.sch-picker-search{border:none;border-bottom:1px solid var(--bdr);padding:7px 10px;font-size:11px;font-family:'Noto Sans KR',sans-serif;outline:none;width:100%;box-sizing:border-box}
+.sch-picker-list{max-height:200px;overflow-y:auto}
+.sch-picker-item{padding:6px 12px;font-size:11px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sch-picker-item:hover,.sch-picker-item.sel{background:var(--acl);color:var(--ac);font-weight:700}
+.sch-picker-empty{padding:10px 12px;font-size:11px;color:var(--mu);text-align:center}
+.cal-body{flex:1;overflow:auto;padding:12px}
+.cal-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:6px}
+.cal-hd{text-align:center;font-size:10px;font-weight:800;color:var(--mu);padding:3px}
+.cal-cell{background:var(--sur);border:1px solid var(--bdr);border-radius:7px;min-height:100px;padding:8px;cursor:pointer;transition:border-color .15s;display:flex;flex-direction:column;gap:2px;position:relative}
+.cal-cell:hover{border-color:var(--ac)}
+.cal-cell.td{border-color:var(--ac);border-width:2px}
+.cal-cell.hd{background:var(--acl)}
+.cal-cell.holiday{background:#fff5f5;border-color:#fca5a5}
+.cal-cell.offday{background:#f5f5f5;opacity:.7}
+.cal-dn{font-size:11px;font-weight:800;color:var(--mu)}
+.cal-cell.td .cal-dn{color:var(--ac)}
+.cal-hol-name{font-size:9px;color:#e53e3e;font-weight:700}
+.cal-off-badge{font-size:9px;color:var(--mu);font-style:italic}
+.cal-rooms{display:flex;flex-direction:column;gap:2px;margin-top:3px}
+.cal-rrow{display:flex;justify-content:space-between;align-items:center;font-size:9px}
+.cal-rnm{color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:65%}
+.cal-rq{font-family:'DM Mono',monospace;font-weight:700;color:var(--ac);font-size:10px}
+.cal-total{font-family:'DM Mono',monospace;font-size:13px;font-weight:900;color:var(--ac2);margin-top:auto}
+.off-toggle{position:absolute;top:6px;right:6px;font-size:9px;background:none;border:1px solid var(--bdr);border-radius:3px;padding:1px 5px;cursor:pointer;color:var(--mu);font-family:'Noto Sans KR',sans-serif}
+.off-toggle:hover{background:var(--bg)}
+.off-toggle.active{background:#fef3c7;border-color:#f59e0b;color:#92400e}
+
+/* ── 학교관리 ── */
+.sm-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.sm-top{padding:10px 16px;background:var(--sur);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:7px;flex-wrap:wrap;flex-shrink:0}
+.sm-top h2{font-size:13px;font-weight:800}
+.btn-add{background:var(--ac);color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:11px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer}
+.sch-search{border:1px solid var(--bdr);border-radius:6px;padding:4px 9px;font-size:11px;font-family:'Noto Sans KR',sans-serif;outline:none;background:#fff;width:150px}
+.sch-search:focus{border-color:var(--ac)}
+.grp-btn{background:#fff;border:1px solid var(--bdr);border-radius:5px;padding:3px 9px;font-size:10px;font-weight:600;cursor:pointer;color:var(--mu);font-family:'Noto Sans KR',sans-serif;white-space:nowrap}
+.grp-btn.on{background:var(--purple);color:#fff;border-color:var(--purple)}
+.sm-body{flex:1;overflow-y:auto;padding:12px}
+.sch-group{background:var(--sur);border:1px solid var(--bdr);border-radius:10px;margin-bottom:7px;overflow:hidden}
+.sch-g-hd{display:flex;align-items:center;gap:9px;padding:11px 14px;cursor:pointer;transition:background .15s;user-select:none}
+.sch-g-hd:hover{background:var(--acl)}
+.sch-g-hd.exp{background:var(--acl)}
+.arr-btns{display:flex;flex-direction:column;gap:2px;flex-shrink:0}
+.arr-btn{background:none;border:1px solid var(--bdr);border-radius:3px;width:20px;height:16px;cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;color:var(--mu);padding:0}
+.arr-btn:hover{background:var(--acl);border-color:var(--ac);color:var(--ac)}
+.arr-btn:disabled{opacity:.3;cursor:default}
+.sch-badge{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+.sch-g-info{flex:1;min-width:0}
+.sch-g-name{font-size:13px;font-weight:700}
+.sch-g-sub{font-size:10px;color:var(--mu);margin-top:1px}
+.sch-g-acts{display:flex;gap:4px}
+.sib{border:1px solid var(--bdr);background:#fff;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;font-family:'Noto Sans KR',sans-serif}
+.sib:hover{background:var(--bg)}
+.sib.del{color:#e53e3e;border-color:#fecaca}
+.sib.del:hover{background:#fee2e2}
+.sch-g-body{display:none;border-top:1px solid var(--bdr);padding:10px 14px;background:#fafaf8}
+.sch-g-hd.exp+.sch-g-body{display:block}
+.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px}
+.di label{display:block;font-size:9px;font-weight:700;color:var(--mu);letter-spacing:.5px;margin-bottom:2px}
+.di span{font-size:11px}
+.sch-note{background:var(--yl);border:1px solid #f0e68c;border-radius:5px;padding:7px 9px;font-size:11px;margin-bottom:9px}
+.mw-tag{background:#fff3cd;border:1px solid #ffc107;border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;color:#856404}
+.room-list{display:flex;flex-direction:column;gap:4px}
+.room-item{display:flex;align-items:center;gap:8px;padding:6px 9px;background:#fff;border:1px solid var(--bdr);border-radius:6px}
+.room-nm{flex:1;font-size:11px;font-weight:600}
+.room-qty{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:var(--ac);min-width:38px;text-align:right}
+.room-acts{display:flex;gap:3px}
+.add-room-btn{margin-top:6px;width:100%;border:1px dashed var(--bdr);background:transparent;border-radius:5px;padding:5px;font-size:10px;color:var(--mu);cursor:pointer;font-family:'Noto Sans KR',sans-serif}
+.add-room-btn:hover{border-color:var(--ac);color:var(--ac);background:var(--acl)}
+.price-grp-hd{background:linear-gradient(135deg,var(--purple),#7a5cbf);color:#fff;border-radius:7px;padding:6px 12px;margin-bottom:5px;margin-top:9px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:7px}
+.price-grp-hd:first-child{margin-top:0}
+.pgcnt{background:rgba(255,255,255,.25);border-radius:9px;padding:1px 7px;font-size:9px}
+
+/* ── 기록 ── */
+.hist-wrap{flex:1;overflow-y:auto;padding:16px}
+.hist-t{font-size:9px;font-weight:800;letter-spacing:1px;color:var(--mu);text-transform:uppercase;margin-bottom:9px}
+.hist-list{display:flex;flex-direction:column;gap:6px}
+.hi{background:var(--sur);border:1px solid var(--bdr);border-radius:8px;overflow:hidden}
+.hi-hd{padding:10px 13px;display:flex;align-items:center;gap:9px;cursor:pointer}
+.hi-hd:hover{background:var(--acl)}
+.hi-dt{font-weight:800;font-size:13px}
+.hi-chips{display:flex;gap:5px;flex-wrap:wrap;flex:1}
+.hi-chip{background:var(--acl);border:1px solid #c8dccb;border-radius:18px;padding:1px 7px;font-size:9px;color:var(--ac);font-weight:700}
+.hi-cnt{font-family:'DM Mono',monospace;font-size:10px;color:var(--mu);white-space:nowrap}
+.hi-del{background:none;border:1px solid #fecaca;color:#e53e3e;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;font-family:'Noto Sans KR',sans-serif}
+.hi-del:hover{background:#fee2e2}
+.hi-load{background:none;border:1px solid #c8dccb;color:var(--ac);border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;font-family:'Noto Sans KR',sans-serif}
+.hi-load:hover{background:var(--acl)}
+
+/* ── 모달 ── */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:center;justify-content:center}
+.ov.on{display:flex}
+.modal{background:#fff;border-radius:12px;padding:22px;max-width:92vw;box-shadow:var(--sh2);max-height:88vh;overflow-y:auto}
+.modal h3{font-size:14px;font-weight:800;margin-bottom:16px}
+.fr{margin-bottom:10px}
+.fr label{display:block;font-size:9px;font-weight:700;color:var(--mu);margin-bottom:3px;letter-spacing:.5px}
+.fr input,.fr select,.fr textarea{width:100%;border:1px solid var(--bdr);border-radius:6px;padding:6px 9px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none}
+.fr input:focus,.fr select:focus,.fr textarea:focus{border-color:var(--ac)}
+.fr textarea{resize:vertical;min-height:60px}
+.fg{display:grid;gap:9px;margin-bottom:10px}
+.fg.c2{grid-template-columns:1fr 1fr}
+.fg.c3{grid-template-columns:1fr 1fr 1fr}
+.fg .fr{margin:0}
+.mbtns{display:flex;gap:6px;margin-top:16px}
+.mb{flex:1;padding:8px;border-radius:6px;border:1px solid var(--bdr);font-size:11px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer}
+.mb.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+.mb.can{background:#fff;color:var(--mu)}
+
+/* ── 실별 청구서 ── */
+.inv-room-header td{ font-weight:900; }
+
+/* ── 인쇄 ── */
+@media print{
+  nav,.tbar,.sumbar,.diet-pnl,.cal-top,.sm-top,.hist-t,.off-toggle,.inv-ctrl{display:none!important}
+  body{height:auto!important;overflow:visible!important;background:#fff!important}
+  .page{display:none!important}
+  .page.on{display:flex!important;height:auto!important;overflow:visible!important;flex-direction:column}
+  .ord-wrap,.ord-main,.tw{height:auto!important;overflow:visible!important}
+  .sm-wrap,.sm-body,.hist-wrap{height:auto!important;overflow:visible!important}
+  .cal-body{height:auto!important;overflow:visible!important}
+  table{font-size:9px;width:100%;page-break-inside:auto}
+  thead th{background:#222!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:8px;padding:4px 5px}
+  tbody td{padding:3px 5px}
+  .sep td{background:#eee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:7px}
+  .exc-r td:first-child{border-left:3px solid #c4622d!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .mw-r td{background:#fffce0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .qi{border:none!important;background:transparent!important;width:auto!important;padding:0}
+  .sci{border:none!important;background:transparent!important;padding:0}
+  .p3-none{display:none!important}
+  .cb{width:14px!important;height:14px!important;font-size:7px!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ptag{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .print-header{display:block!important;text-align:center;margin-bottom:8px;font-size:15px;font-weight:900;font-family:'Noto Sans KR',sans-serif}
+  #calPrintHeader{display:block!important;text-align:center;margin-bottom:10px;font-size:16px;font-weight:900;font-family:'Noto Sans KR',sans-serif;color:#1a1814}
+  .cal-grid{display:grid!important;grid-template-columns:repeat(5,1fr);gap:4px}
+  .cal-cell{border:1px solid #ccc!important;min-height:70px!important;font-size:8px}
+  .sch-group{break-inside:avoid}
+
+  /* 청구서 전용 인쇄 */
+  .inv-body{padding:0!important;overflow:visible!important;height:auto!important;background:transparent!important;gap:0!important;display:block!important}
+  .inv-sheet{box-shadow:none!important;border-radius:0!important;width:100%!important;padding:14px 20px!important;display:none!important;flex-shrink:0}
+  .inv-sheet.print-active{display:flex!important;page-break-before:always}
+  .inv-sheet.print-active:first-child{page-break-before:avoid}
+  .inv-info-table .val input{background:transparent!important}
+  .inv-info-table .lbl{background:#f0f0e0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .inv-info-table .stamp-cell img{width:26px!important;height:26px!important}
+  .inv-main-title{font-size:17px!important;letter-spacing:4px!important}
+  .inv-table th{background:#1a1814!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .inv-room-header td{background:#2d5a3d!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .inv-sign-area{margin-top:10px!important;padding-top:8px!important}
+
+  @page{size:A4 portrait;margin:10mm}
+}
+.btn-toggle-del{background:#fff;border:1px solid var(--bdr);border-radius:5px;padding:4px 10px;font-size:10px;font-weight:600;cursor:pointer;color:var(--mu);font-family:'Noto Sans KR',sans-serif;white-space:nowrap}
+.btn-toggle-del:hover{background:var(--acl);color:var(--ac);border-color:var(--ac)}
+.btn-toggle-del.on{background:#e8f4ff;border-color:#4a90d9;color:#1a5a9a}
+.btn-excel{background:#1d6f42;color:#fff;border:none;border-radius:5px;padding:4px 11px;font-size:10px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap}
+.btn-excel:hover{opacity:.85}
+
+/* ── 청구서 ── */
+.inv-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#d8d5cf}
+.inv-ctrl{padding:10px 20px;background:var(--sur);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap}
+.inv-body{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;align-items:center;gap:32px}
+.inv-sheet{background:#fff;width:720px;padding:32px 44px 36px;box-shadow:0 4px 24px rgba(0,0,0,.13);border-radius:3px;display:flex;flex-direction:column;gap:0;flex-shrink:0}
+
+/* 타이틀 */
+.inv-title-area{text-align:center;margin-bottom:10px}
+.inv-main-title{font-size:22px;font-weight:900;letter-spacing:6px;color:#1a1814;display:flex;align-items:center;justify-content:center;gap:0;line-height:1.4}
+.inv-title-sel{font-size:22px;font-weight:900;letter-spacing:6px;font-family:'Noto Sans KR',sans-serif;color:#1a1814;border:none;outline:none;background:transparent;cursor:pointer;padding:0;-webkit-appearance:none;appearance:none;text-underline-offset:3px;text-decoration:underline dotted #aaa}
+.inv-title-sel:hover{background:#f5f5e8;border-radius:2px}
+.inv-title-sel option{font-size:14px;letter-spacing:normal;font-weight:700}
+
+/* 공급자 정보 테이블 - 엑셀 양식과 동일 */
+.inv-info-table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px;border:1.5px solid #444}
+.inv-info-table td{border:1px solid #666;padding:5px 8px;vertical-align:middle;line-height:1.5;height:26px}
+.inv-info-table .lbl{background:#f0f0e0;font-weight:700;text-align:center;white-space:nowrap;font-size:10px;letter-spacing:2px}
+.inv-info-table .val{background:#fff}
+.inv-info-table .val input{border:none;outline:none;width:100%;font-size:11px;font-family:'Noto Sans KR',sans-serif;background:transparent}
+.inv-info-table .val input:focus{background:#fffde7}
+.inv-info-table .stamp-cell{border:1.5px solid #555;text-align:center;vertical-align:middle;font-size:11px;color:#444;font-weight:700;background:#fff;padding:0}
+.inv-client-cell{font-size:13px;font-weight:700;color:#1a1814}
+
+/* 본문 테이블 */
+.inv-table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:20px}
+.inv-table th{background:#1a1814;color:#fff;padding:7px 8px;font-weight:700;text-align:center;font-size:10px;letter-spacing:.5px;border:1px solid #1a1814}
+.inv-table td{padding:5px 8px;border:1px solid #888;text-align:center;vertical-align:middle}
+.inv-table td.tl{text-align:left}
+.inv-table tr:nth-child(even){background:#fafaf8}
+.inv-table tr:hover{background:#f0f0e8}
+.inv-date-row td{background:#fff!important;font-weight:400;color:#1a1814}
+.inv-subtotal td{background:#f5f3ed!important;font-weight:700;border-top:2px solid #1a1814}
+.inv-total-row td{background:#fff!important;color:#1a1814!important;font-weight:900;font-size:12px;border-top:2px solid #1a1814}
+.inv-month-hd td{background:#2d5a3d!important;color:#fff!important;font-weight:800;letter-spacing:1px;font-size:11px}
+.inv-sign-area{display:flex;justify-content:flex-end;gap:30px;margin-top:20px;padding-top:16px}
+.inv-sign-box{text-align:center;width:120px}
+.inv-sign-label{font-size:10px;color:var(--mu);margin-bottom:8px;font-weight:700;letter-spacing:.5px}
+.inv-sign-line{border-bottom:1px solid #999;height:40px;margin-bottom:4px;font-size:12px;font-weight:600;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px}
+.inv-sign-stamp{font-size:10px;color:var(--mu)}
+.inv-empty{text-align:center;padding:60px;color:var(--mu);font-size:13px}
+.inv-total-label{text-align:right;font-size:12px;font-weight:700;margin-top:6px;padding-right:4px}
+
+@media print{
+  .inv-ctrl{display:none!important}
+  .inv-body{padding:0!important;overflow:visible!important;height:auto!important}
+  .inv-sheet{box-shadow:none!important;border-radius:0!important;width:100%!important;padding:20px 30px!important}
+  .inv-main-title{font-size:22px!important}
+  .inv-info-table .val input{background:transparent!important}
+}
+.snack-filter-sel{border:1px solid var(--bdr);border-radius:5px;padding:3px 7px;font-size:10px;font-family:'Noto Sans KR',sans-serif;outline:none;background:#fff;color:var(--txt);cursor:pointer;max-width:150px}
+.snack-filter-sel:focus{border-color:var(--ac)}
+.cal-snlbl{font-size:9px;color:var(--ac);font-weight:700;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.del-col{transition:all .2s}
+#calPrintHeader{display:none}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">🥨 간식발주</span>
+  <div class="ntabs">
+    <button class="ntab on" onclick="showPg('order',this)">📋 발주표</button>
+    <button class="ntab" onclick="showPg('calendar',this)">📅 달력</button>
+    <button class="ntab" onclick="showPg('invoice',this)">🧾 청구서</button>
+    <button class="ntab" onclick="showPg('schools',this)">🏫 학교관리</button>
+    <button class="ntab" onclick="showPg('history',this)">🗂 기록</button>
+  </div>
+  <div class="nav-r">
+    <button class="io-btn" onclick="exportData()">💾 저장</button>
+    <label class="io-btn" style="cursor:pointer">📂 불러오기<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
+    <div class="nav-date" onclick="openDateMod()">📅 <span id="navDt">날짜 선택</span></div>
+  </div>
+</nav>
+
+<!-- 발주표 -->
+<div class="page on" id="pg-order">
+  <div class="ord-wrap">
+    <div class="diet-pnl">
+      <div class="pnl-hd">식단금액별 품목 설정</div>
+      <div class="diet-sc" id="dietList"></div>
+      <div class="mw-sec">
+        <div class="mw-ttl">🔥 전자레인지 품목</div>
+        <input class="mw-in" type="text" id="mwItem" placeholder="핫도그 (🔥학교 품목1 자동적용)" oninput="renderTable()">
+        <div class="mw-hint">전자레인지 체크된 학교에만 적용</div>
+      </div>
+    </div>
+    <div class="ord-main">
+      <div class="print-header" id="printHeader"></div>
+      <div class="tbar">
+        <div class="fb-group" style="display:contents">
+          <button class="fb on" onclick="setF('all',this)">전체</button>
+          <button class="fb" onclick="setF('A',this)">A코스</button>
+          <button class="fb" onclick="setF('B',this)">B코스</button>
+          <button class="fb" onclick="setF('C',this)">C코스</button>
+          <button class="fb" onclick="setF('D',this)">D코스</button>
+          <button class="fb" onclick="setF('E',this)">E코스</button>
+        </div>
+        <div style="width:1px;height:18px;background:var(--bdr);margin:0 2px"></div>
+        <select class="snack-filter-sel" id="snackFilter" onchange="renderTable()">
+          <option value="">🔍 품목 필터 없음</option>
+        </select>
+        <div style="width:1px;height:18px;background:var(--bdr);margin:0 2px"></div>
+        <button class="btn-toggle-del" id="btnDel" onclick="toggleDelivery()">📍 배송지 숨김</button>
+        <button class="btn-print" onclick="window.print()">🖨 인쇄</button>
+        <button class="btn-excel" onclick="exportExcel()">📊 엑셀</button>
+        <button class="btn-sv" onclick="saveDateRec()">💾 저장</button>
+      </div>
+      <div class="tw">
+        <table id="mainTable">
+          <thead><tr>
+            <th>코스</th><th>금액</th><th class="tl">학교명</th><th class="tl">실/반</th>
+            <th class="tl del-col">배송지</th><th>수량</th><th>품목1</th><th>품목2</th>
+            <th id="th3">품목3</th><th id="thFork">포크/스푼</th><th>합계</th>
+          </tr></thead>
+          <tbody id="ordBody"></tbody>
+        </table>
+      </div>
+      <div class="sumbar">
+        <div style="flex:1">
+          <div class="sum-t">간식별 총 발주수량</div>
+          <div class="sum-chips" id="sumChips"></div>
+        </div>
+        <div class="grand">
+          <div class="grand-n" id="grandN">0</div>
+          <div class="grand-l">총 수량</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 달력 -->
+<div class="page" id="pg-calendar">
+  <div class="cal-top">
+    <h2>수량 달력</h2>
+    <button class="cn-btn" onclick="calMov(-1)">◀</button>
+    <span class="cm-lbl" id="calLbl"></span>
+    <button class="cn-btn" onclick="calMov(1)">▶</button>
+    <div class="sch-picker" id="calSchPicker">
+      <input class="sch-picker-input" id="calSchDisplay" readonly placeholder="학교 선택" onclick="toggleSchPicker('calSchPicker')">
+      <span class="sch-picker-arrow">▼</span>
+      <div class="sch-picker-drop" id="calSchDrop">
+        <input class="sch-picker-search" placeholder="🔍 학교 검색..." oninput="filterSchPicker('calSchPicker',this.value)">
+        <div class="sch-picker-list" id="calSchList"></div>
+      </div>
+    </div>
+    <button class="btn-print" onclick="window.print()" style="margin-left:auto">🖨 인쇄</button>
+  </div>
+  <div class="print-header" id="calPrintHeader"></div>
+  <div class="cal-body">
+    <div class="cal-grid" id="calHds"></div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+</div>
+
+<!-- 학교관리 -->
+<div class="page" id="pg-schools">
+  <div class="sm-wrap">
+    <div class="sm-top">
+      <h2>학교 관리</h2>
+      <button class="btn-add" onclick="openAddSch()">+ 학교 추가</button>
+      <button class="btn-add" style="background:#5a3d7a" onclick="openCourseMgr()">⚙️ 코스 관리</button>
+      <input class="sch-search" type="text" id="schSearch" placeholder="🔍 학교 이름 검색..." oninput="renderSchList()">
+      <button class="grp-btn" id="grpBtn" onclick="toggleGrp()">식단별 묶기</button>
+      <div style="display:flex;gap:5px;margin-left:auto;align-items:center" id="smFilterBtns">
+        <button class="fb on" onclick="setSmF('all',this)">전체</button>
+      </div>
+      <button class="btn-print" onclick="window.print()">🖨 인쇄</button>
+    </div>
+    <div class="sm-body"><div id="schList"></div></div>
+  </div>
+</div>
+
+<!-- 코스 관리 모달 -->
+<div class="ov" id="ov-course">
+  <div class="modal" style="width:420px">
+    <h3>코스 관리</h3>
+    <p style="font-size:11px;color:var(--mu);margin-bottom:12px">드래그해서 순서 변경 · 이름 클릭해서 수정</p>
+    <div id="courseList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px">
+      <input id="newCourseName" class="sch-search" placeholder="새 코스 이름 (예: F)" style="flex:1;margin:0" maxlength="10">
+      <button class="btn-add" onclick="addCourse()">+ 추가</button>
+    </div>
+    <div style="display:flex;justify-content:flex-end">
+      <button class="mb" onclick="closeOv('ov-course')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 기록 -->
+<div class="page" id="pg-history">
+  <div class="hist-wrap">
+    <div style="display:flex;align-items:center;margin-bottom:9px">
+      <div class="hist-t" style="margin-bottom:0">날짜별 발주 기록</div>
+      <button class="btn-print" onclick="window.print()" style="margin-left:auto">🖨 인쇄</button>
+    </div>
+    <div class="hist-list" id="histList"></div>
+  </div>
+</div>
+
+<!-- 청구서 -->
+<div class="page" id="pg-invoice">
+  <div class="inv-wrap">
+    <!-- 컨트롤 바 -->
+    <div class="inv-ctrl">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1">
+        <h2 style="font-size:14px;font-weight:800;white-space:nowrap">🧾 청구서</h2>
+        <div style="display:flex;align-items:center;gap:6px">
+          <label style="font-size:11px;font-weight:600;color:var(--mu)">학교</label>
+          <div class="sch-picker" id="invSchPicker">
+            <input class="sch-picker-input" id="invSchDisplay" readonly placeholder="학교 선택" onclick="toggleSchPicker('invSchPicker')">
+            <span class="sch-picker-arrow">▼</span>
+            <div class="sch-picker-drop" id="invSchDrop">
+              <input class="sch-picker-search" placeholder="🔍 학교 검색..." oninput="filterSchPicker('invSchPicker',this.value)">
+              <div class="sch-picker-list" id="invSchList"></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <label style="font-size:11px;font-weight:600;color:var(--mu)">시작일</label>
+          <input type="date" id="invDateFrom" class="sch-sel" style="font-size:11px;padding:3px 6px" onchange="renderInvoice()">
+        </div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <span style="font-size:11px;color:var(--mu);font-weight:600">~</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <label style="font-size:11px;font-weight:600;color:var(--mu)">종료일</label>
+          <input type="date" id="invDateTo" class="sch-sel" style="font-size:11px;padding:3px 6px" onchange="renderInvoice()">
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;margin-left:6px">
+          <button id="invModeAll" class="fb on" onclick="setInvMode('all',this)" style="font-size:10px;padding:3px 8px">전체합산</button>
+          <button id="invModeRoom" class="fb" onclick="setInvMode('room',this)" style="font-size:10px;padding:3px 8px">실별</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn-print" onclick="printInvoice()">🖨 청구서 인쇄</button>
+        <button class="btn-excel" onclick="exportInvoiceExcel()">📊 엑셀</button>
+        <button class="btn-excel" style="background:#2563eb" onclick="sendInvoiceMail()">✉️ 메일</button>
+      </div>
+    </div>
+
+    <!-- 청구서 본문 -->
+    <div class="inv-body" id="invBody">
+      <!-- 전체합산 모드: 기존 단일 시트 -->
+      <div class="inv-sheet" id="invSheet">
+
+        <!-- 제목 -->
+        <div class="inv-title-area">
+          <div class="inv-main-title">
+            <select id="inv-classtype" onchange="updateInvTitle()" class="inv-title-sel">
+              <option value="늘봄교실">늘봄교실</option>
+              <option value="병설유치원">병설유치원</option>
+              <option value="유치원">유치원</option>
+            </select>
+            &nbsp;간식&nbsp;&nbsp;&nbsp;<select id="inv-doctype" onchange="updateInvTitle()" class="inv-title-sel">
+              <option value="청&nbsp;구&nbsp;서">청&nbsp;구&nbsp;서</option>
+              <option value="견&nbsp;적&nbsp;서">견&nbsp;적&nbsp;서</option>
+            </select>
+          </div>
+        </div>
+
+        <!--
+          엑셀 양식 그대로:
+          A       | B~C      | D        | E      | F    | G        | H
+          공급자상호 | [값]    | 대 표 자  | [값]   | (인) | 일  자   | [날짜]
+          사업자등록번호 | [값] | 전 화 번 호 | [값]  | ^   |          |
+          업  태  | [값]     | 종  목   | [값]    | ^    | 거 래 처  |
+          주  소  | [값 colspan B~E]     |         | ^    |          | [학교명]
+          계 좌 번 호 | [값 colspan B~E] |         | ^    | [드롭다운] | [학교명]
+        -->
+        <table class="inv-info-table" id="invInfoTable">
+          <colgroup>
+            <col style="width:82px">   <!-- A: 라벨 -->
+            <col style="width:130px">  <!-- B: 값 -->
+            <col style="width:72px">   <!-- C: 라벨 -->
+            <col style="width:90px">   <!-- D: 값 -->
+            <col style="width:32px">   <!-- E: (인) -->
+            <col style="width:58px">   <!-- F: 우측라벨 -->
+            <col>                      <!-- G: 우측값 -->
+          </colgroup>
+
+          <!-- 행1: 공급자상호 | 값 | 대표자 | 값 | (인) | 일자라벨 | 일자값 -->
+          <tr>
+            <td class="lbl">공급자상호</td>
+            <td class="val"><input id="inv-company" value="시선홀푸드"></td>
+            <td class="lbl">대&nbsp;표&nbsp;자</td>
+            <td class="val"><input id="inv-ceo" value="이성규"></td>
+            <td class="stamp-cell"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAyADIAAD/4RDARXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAExAAIAAAAuAAAIVgEyAAIAAAAUAAAIhIdpAAQAAAABAAAImOocAAcAAAgMAAAASgAAAAAc6gAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE1pY3Jvc29mdCBXaW5kb3dzIFBob3RvIFZpZXdlciA2LjEuNzYwMC4xNjM4NQAyMDE1OjA1OjAxIDA4OjI1OjEzAAAB6hwABwAACAwAAAiqAAAAABzqAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/4TG4aHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49J++7vycgaWQ9J1c1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCc/Pg0KPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyI+PHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj48cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0idXVpZDpmYWY1YmRkNS1iYTNkLTExZGEtYWQzMS1kMzNkNzUxODJmMWIiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyI+PHhtcDpDcmVhdG9yVG9vbD5NaWNyb3NvZnQgV2luZG93cyBQaG90byBWaWV3ZXIgNi4xLjc2MDAuMTYzODU8L3htcDpDcmVhdG9yVG9vbD48L3JkZjpEZXNjcmlwdGlvbj48L3JkZjpSREY+PC94OnhtcG1ldGE+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8P3hwYWNrZXQgZW5kPSd3Jz8+/9sAQwACAQECAQECAgICAgICAgMFAwMDAwMGBAQDBQcGBwcHBgcHCAkLCQgICggHBwoNCgoLDAwMDAcJ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" style="width:30px;height:30px;object-fit:contain;opacity:0.85;display:block;margin:auto"></td>
+            <td class="lbl" style="text-align:center">일&nbsp;&nbsp;&nbsp;자</td>
+            <td class="val" id="inv-daterange" style="font-size:10px;white-space:nowrap;vertical-align:middle"></td>
+          </tr>
+
+          <!-- 행2: 사업자등록번호 | 값 | 전화번호 | 값(colspan2) | 거래처라벨 | 학교명 -->
+          <tr>
+            <td class="lbl">사업자등록번호</td>
+            <td class="val"><input id="inv-biz" value="514-20-54380"></td>
+            <td class="lbl">전&nbsp;화&nbsp;번&nbsp;호</td>
+            <td class="val" colspan="2"><input id="inv-tel" value="010-3406-2022"></td>
+            <td class="lbl" style="text-align:center">거&nbsp;래&nbsp;처</td>
+            <td class="val inv-client-cell" id="inv-client" style="font-weight:700;text-align:center;vertical-align:middle"></td>
+          </tr>
+
+          <!-- 행3: 업태 | 값 | 종목 | 값(colspan2) | 늘봄교실(제목따라변경, colspan2) -->
+          <tr>
+            <td class="lbl">업&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;태</td>
+            <td class="val"><input id="inv-biztype" value="도소매 외"></td>
+            <td class="lbl">종&nbsp;&nbsp;&nbsp;&nbsp;목</td>
+            <td class="val" colspan="2"><input id="inv-bizitem" value="식자재 외"></td>
+            <td class="val" colspan="2" id="inv-classtype-label" style="text-align:center;font-weight:700;font-size:11px;vertical-align:middle;background:#f0f0e0"></td>
+          </tr>
+
+          <!-- 행4: 주소 | 값(colspan6) -->
+          <tr>
+            <td class="lbl">주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</td>
+            <td class="val" colspan="6"><input id="inv-addr" value="대구광역시 서구 서대구로 54길 35, 2층(비산동)"></td>
+          </tr>
+
+          <!-- 행5: 계좌번호 | 값(colspan6) -->
+          <tr>
+            <td class="lbl">계&nbsp;좌&nbsp;번&nbsp;호</td>
+            <td class="val" colspan="6"><input id="inv-account" value="국민은행 599701-04-339403 (이성규-시선홀푸드)"></td>
+          </tr>
+        </table>
+
+        <!-- 본문 테이블 -->
+        <table class="inv-table" id="invTable">
+          <thead>
+            <tr>
+              <th style="width:80px">날&nbsp;&nbsp;짜</th>
+              <th>품&nbsp;목&nbsp;명(1)</th>
+              <th>품&nbsp;목&nbsp;명(2)</th>
+              <th>품&nbsp;목&nbsp;명(3)</th>
+              <th style="width:50px">수&nbsp;량</th>
+              <th style="width:70px">단&nbsp;가</th>
+              <th style="width:80px">합&nbsp;계</th>
+            </tr>
+          </thead>
+          <tbody id="invTbody"></tbody>
+          <tfoot id="invTfoot"></tfoot>
+        </table>
+
+        <!-- 합계금 -->
+        <div class="inv-total-label">합계금 &nbsp;&nbsp;&nbsp; <span id="invGrandLabel" style="font-size:14px;font-weight:900">0</span> 원</div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 날짜 모달 -->
+<div class="ov" id="ov-date">
+  <div class="modal" style="width:280px">
+    <h3>📅 날짜 선택</h3>
+    <div class="fr"><input type="date" id="dtInput"></div>
+    <div class="mbtns">
+      <button class="mb can" onclick="closeOv('ov-date')">취소</button>
+      <button class="mb pri" onclick="applyDate()">적용</button>
+    </div>
+  </div>
+</div>
+
+<!-- 학교 모달 -->
+<div class="ov" id="ov-sch">
+  <div class="modal" style="width:600px">
+    <h3 id="schModTitle">학교 추가</h3>
+    <!-- 행1: 학교명 / 코스 / 식단금액 -->
+    <div class="fg c3">
+      <div class="fr"><label>학교명 *</label><input id="sf-name" placeholder="죽전초"></div>
+      <div class="fr"><label>코스 *</label>
+        <select id="sf-course"></select>
+      </div>
+      <div class="fr"><label>식단금액 (원) *</label><input id="sf-price" type="number" placeholder="2000"></div>
+    </div>
+    <!-- 행2: 학교장 / 고유번호 -->
+    <div class="fg c2">
+      <div class="fr"><label>학교장 이름</label><input id="sf-principal" placeholder="홍길동"></div>
+      <div class="fr"><label>학교 고유번호</label><input id="sf-code" placeholder="12345"></div>
+    </div>
+    <!-- 행3: 주소 -->
+    <div class="fr"><label>학교 주소</label><input id="sf-addr" placeholder="대구광역시..."></div>
+    <!-- 행4: 간식 배송지 -->
+    <div class="fr"><label>간식 배송지</label><input id="sf-delivery" placeholder="예: 행정실, 늘봄실 앞, 1층 현관 등"></div>
+    <!-- 행5: 행정실 전화 / 행정실 이메일 -->
+    <div class="fg c2">
+      <div class="fr"><label>행정실 전화</label><input id="sf-tel1" placeholder="053-000-0000"></div>
+      <div class="fr"><label>행정실 이메일</label><input id="sf-email1" placeholder="admin@school.kr"></div>
+    </div>
+    <!-- 행6: 늘봄실 전화 / 늘봄실 이메일 -->
+    <div class="fg c2">
+      <div class="fr"><label>늘봄실 전화</label><input id="sf-tel2" placeholder="053-000-0000"></div>
+      <div class="fr"><label>늘봄실 이메일</label><input id="sf-email2" placeholder="neulbom@school.kr"></div>
+    </div>
+    <div class="fr" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <label style="font-size:9px;font-weight:700;color:var(--mu);letter-spacing:.5px">환경</label>
+      <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">
+        <input type="checkbox" id="sf-mw" style="accent-color:var(--ac);width:14px;height:14px"> 🔥 전자레인지 있음
+      </label>
+    </div>
+    <div class="fr"><label>구분 (청구서 자동 표시)</label>
+      <select id="sf-classtype" style="border:1px solid var(--bdr);border-radius:6px;padding:6px 9px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;width:100%">
+        <option value="늘봄교실">늘봄교실</option>
+        <option value="병설유치원">병설유치원</option>
+        <option value="유치원">유치원</option>
+      </select>
+    </div>
+    <div class="fr"><label>특이사항</label><textarea id="sf-note" placeholder="예: 알레르기 학생 있음..."></textarea></div>
+    <div class="mbtns">
+      <button class="mb can" onclick="closeOv('ov-sch')">취소</button>
+      <button class="mb pri" onclick="saveSch()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 실 모달 -->
+<div class="ov" id="ov-room">
+  <div class="modal" style="width:340px">
+    <h3 id="roomModTitle">실 추가</h3>
+    <div class="fr"><label>실/반 이름</label><input id="rf-name" placeholder="늘봄1 (없으면 비워두기)"></div>
+    <div class="fr"><label>기본 수량</label><input id="rf-qty" type="number" placeholder="20"></div>
+    <div class="fr"><label>배송지 <span style="font-weight:400;color:var(--mu)">(비워두면 학교 배송지 사용)</span></label><input id="rf-delivery" placeholder="예: 행정실, 1층 현관 등"></div>
+    <div class="fr"><label>예외 여부</label>
+      <select id="rf-exc"><option value="0">일반</option><option value="1">예외 (별도 확인)</option></select>
+    </div>
+    <div class="mbtns">
+      <button class="mb can" onclick="closeOv('ov-room')">취소</button>
+      <button class="mb pri" onclick="saveRoom()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 달력 상세 모달 -->
+<div class="ov" id="ov-cal">
+  <div class="modal" style="width:360px">
+    <h3 id="calModTitle"></h3>
+    <div id="calRoomInputs" style="margin-bottom:12px"></div>
+    <div class="fr"><label>품목1</label><input id="cal-s1" type="text"></div>
+    <div class="fr"><label>품목2</label><input id="cal-s2" type="text"></div>
+    <div class="fr"><label>품목3</label><input id="cal-s3" type="text"></div>
+    <div class="mbtns">
+      <button class="mb can" onclick="closeOv('ov-cal')">취소</button>
+      <button class="mb pri" onclick="saveCalDay()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+// ═══════════════════════════════════════════════════
+// 한국 공휴일 (고정)
+// ═══════════════════════════════════════════════════
+const HOLIDAYS = {
+  '01-01':'신정','03-01':'삼일절','05-05':'어린이날','06-06':'현충일',
+  '08-15':'광복절','10-03':'개천절','10-09':'한글날','12-25':'성탄절'
+};
+// 음력 공휴일은 연도별로 다르므로 주요 연도만 추가
+const LUNAR_HOLIDAYS = {
+  '2025-01-28':'설날 연휴','2025-01-29':'설날','2025-01-30':'설날 연휴',
+  '2025-05-05':'어린이날','2025-05-06':'대체공휴일',
+  '2025-10-05':'추석 연휴','2025-10-06':'추석','2025-10-07':'추석 연휴',
+  '2026-02-16':'설날 연휴','2026-02-17':'설날','2026-02-18':'설날 연휴',
+  '2026-05-24':'부처님오신날',
+  '2026-09-24':'추석 연휴','2026-09-25':'추석','2026-09-26':'추석 연휴',
+};
+
+function getHoliday(dateStr){
+  if(LUNAR_HOLIDAYS[dateStr]) return LUNAR_HOLIDAYS[dateStr];
+  const mmdd = dateStr.slice(5);
+  return HOLIDAYS[mmdd]||null;
+}
+
+// ═══════════════════════════════════════════════════
+// DB 구조
+// schools: [{id,name,course,price,code,addr,delivery,principal,tel1,tel2,email1,email2,note,mw,
+//            rooms:[{id,name,qty,exc,utensil}]}]
+// history: {dateStr:{dietSnacks:{price:[s1,s2,s3]}, overrides:{roomId:{qty,snacks}}, offdays:{schId:true}}}
+// ═══════════════════════════════════════════════════
+let DB = {schools:[],history:{},dietSnacks:{},overrides:{},dietFork:{},courses:['A','B','C','D','E']};
+
+const INIT_SCHOOLS = [
+  {id:1,name:"죽전초",course:"A",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:101,name:"늘봄1",qty:22,exc:false,utensil:""},{id:102,name:"늘봄2(보존식)",qty:6,exc:false,utensil:""},{id:103,name:"늘봄5(전자레인지X)",qty:0,exc:true,utensil:""}]},
+  {id:2,name:"장선초",course:"A",price:1200,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:201,name:"늘봄1",qty:33,exc:false,utensil:""},{id:202,name:"늘봄2",qty:21,exc:false,utensil:""},{id:203,name:"늘봄3",qty:17,exc:false,utensil:""},{id:204,name:"늘봄4",qty:21,exc:false,utensil:""}]},
+  {id:3,name:"장초",course:"A",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,rooms:[{id:301,name:"",qty:13,exc:false,utensil:""}]},
+  {id:4,name:"성지초",course:"A",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:401,name:"늘봄1",qty:20,exc:false,utensil:""},{id:402,name:"늘봄3",qty:14,exc:false,utensil:""},{id:403,name:"늘봄4",qty:8,exc:false,utensil:""}]},
+  {id:5,name:"선원초",course:"A",price:1500,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,rooms:[{id:501,name:"",qty:30,exc:false,utensil:""}]},
+  {id:6,name:"성곡초",course:"A",price:1000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:601,name:"1실",qty:14,exc:false,utensil:""},{id:602,name:"2실",qty:23,exc:false,utensil:""}]},
+  {id:7,name:"이곡초",course:"A",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,rooms:[{id:701,name:"",qty:27,exc:false,utensil:""}]},
+  {id:8,name:"생서초",course:"A",price:1600,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:801,name:"1실(보존식)",qty:22,exc:false,utensil:""},{id:802,name:"2실",qty:34,exc:false,utensil:""}]},
+  {id:9,name:"덕인초",course:"A",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:901,name:"늘봄1",qty:25,exc:false,utensil:""},{id:902,name:"늘봄2",qty:31,exc:false,utensil:""}]},
+  {id:10,name:"감천초",course:"A",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,rooms:[{id:1001,name:"",qty:9,exc:false,utensil:""}]},
+  {id:11,name:"남송초",course:"A",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:1101,name:"1실",qty:10,exc:false,utensil:""},{id:1102,name:"2실(보존식)",qty:15,exc:false,utensil:""}]},
+  {id:12,name:"내랑초",course:"A",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:1201,name:"늘봄1",qty:26,exc:false,utensil:""},{id:1202,name:"늘봄2",qty:25,exc:false,utensil:""}]},
+  {id:13,name:"성남초",course:"A",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:1301,name:"늘봄1실",qty:13,exc:false,utensil:""},{id:1302,name:"늘봄2실",qty:13,exc:false,utensil:""}]},
+  {id:14,name:"성명조",course:"A",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,rooms:[{id:1401,name:"늘봄1실(보존식)",qty:21,exc:false,utensil:""}]},
+  {id:15,name:"남도초",course:"B",price:1000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:1501,name:"1실(보존식)",qty:28,exc:false,utensil:""},{id:1502,name:"5실",qty:11,exc:false,utensil:""}]},
+  {id:16,name:"대곡초",course:"B",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:1601,name:"돌봄",qty:22,exc:false,utensil:""},{id:1602,name:"통삼성늘봄",qty:22,exc:false,utensil:""},{id:1603,name:"1실(보존식)",qty:28,exc:false,utensil:""},{id:1604,name:"3실",qty:12,exc:false,utensil:""}]},
+  {id:17,name:"대서초",course:"B",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:1701,name:"늘봄1",qty:20,exc:false,utensil:""},{id:1702,name:"늘봄2",qty:26,exc:false,utensil:""},{id:1703,name:"늘봄3",qty:5,exc:false,utensil:""}]},
+  {id:18,name:"한실초병설",course:"B",price:1310,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:1801,name:"새싹1",qty:10,exc:false,utensil:""},{id:1802,name:"새싹2",qty:8,exc:false,utensil:""},{id:1803,name:"꽃잎1",qty:12,exc:false,utensil:""},{id:1804,name:"꽃잎2",qty:11,exc:false,utensil:""},{id:1805,name:"별매1",qty:15,exc:false,utensil:""},{id:1806,name:"별매2",qty:15,exc:false,utensil:""},{id:1807,name:"늘봄1(보존식)",qty:37,exc:false,utensil:""},{id:1808,name:"늘봄2",qty:24,exc:false,utensil:""}]},
+  {id:19,name:"노전초",course:"B",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,rooms:[{id:1901,name:"",qty:21,exc:false,utensil:""}]},
+  {id:20,name:"진천초",course:"B",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:2001,name:"돌봄/당번",qty:23,exc:false,utensil:""},{id:2002,name:"",qty:16,exc:false,utensil:""}]},
+  {id:21,name:"월배초",course:"B",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:2101,name:"1실",qty:10,exc:false,utensil:""},{id:2102,name:"2실",qty:14,exc:false,utensil:""},{id:2103,name:"3실",qty:14,exc:false,utensil:""}]},
+  {id:22,name:"월서초",course:"B",price:1700,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:2201,name:"2실",qty:23,exc:false,utensil:""},{id:2202,name:"3실",qty:7,exc:false,utensil:""}]},
+  {id:23,name:"월달초",course:"B",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,rooms:[{id:2301,name:"",qty:35,exc:false,utensil:""}]},
+  {id:24,name:"동구초",course:"B",price:1200,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:2401,name:"1실",qty:9,exc:false,utensil:""},{id:2402,name:"2실",qty:8,exc:false,utensil:""},{id:2403,name:"4실",qty:5,exc:false,utensil:""}]},
+  {id:25,name:"남대구초",course:"B",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,rooms:[{id:2501,name:"",qty:36,exc:false,utensil:""}]},
+  {id:26,name:"봉익초",course:"C",price:1800,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:2601,name:"돌봄1",qty:20,exc:false,utensil:""},{id:2602,name:"돌봄2",qty:26,exc:false,utensil:""},{id:2603,name:"병설",qty:32,exc:false,utensil:""}]},
+  {id:27,name:"파동초",course:"C",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:2701,name:"1실",qty:4,exc:false,utensil:""},{id:2702,name:"2실(보존식)",qty:6,exc:false,utensil:""}]},
+  {id:28,name:"수성초",course:"C",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,rooms:[{id:2801,name:"",qty:20,exc:false,utensil:""}]},
+  {id:29,name:"돌안길초",course:"C",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:2901,name:"늘봄1",qty:15,exc:false,utensil:""},{id:2902,name:"늘봄2(보존식)",qty:16,exc:false,utensil:""}]},
+  {id:30,name:"황금초",course:"C",price:1020,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:3001,name:"4실(보존식)1",qty:27,exc:false,utensil:""},{id:3002,name:"4실(보존식)2",qty:30,exc:false,utensil:""},{id:3003,name:"개나리개교",qty:11,exc:false,utensil:""}]},
+  {id:31,name:"남양학교",course:"C",price:1800,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"특수학교",mw:false,
+   rooms:[{id:3101,name:"개나리1반",qty:11,exc:false,utensil:""},{id:3102,name:"재송화",qty:11,exc:false,utensil:""},{id:3103,name:"진달래",qty:12,exc:false,utensil:""},{id:3104,name:"맞춤형",qty:6,exc:false,utensil:""}]},
+  {id:32,name:"유치초",course:"C",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:3201,name:"늘봄1실",qty:16,exc:false,utensil:""},{id:3202,name:"늘봄2실",qty:6,exc:false,utensil:""},{id:3203,name:"늘봄3실",qty:19,exc:false,utensil:""}]},
+  {id:33,name:"동원초병설",course:"C",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:3301,name:"1실",qty:7,exc:false,utensil:""},{id:3302,name:"2실",qty:14,exc:false,utensil:""}]},
+  {id:34,name:"범어초",course:"C",price:1500,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:3401,name:"병설",qty:6,exc:false,utensil:""},{id:3402,name:"",qty:20,exc:false,utensil:""}]},
+  {id:35,name:"동대구초병설",course:"C",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:3501,name:"1실",qty:23,exc:false,utensil:""},{id:3502,name:"2실",qty:24,exc:false,utensil:""}]},
+  {id:36,name:"중로초병설",course:"C",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,rooms:[{id:3601,name:"",qty:16,exc:false,utensil:""}]},
+  {id:37,name:"수창초",course:"C",price:990,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:3701,name:"병설1실",qty:16,exc:false,utensil:""},{id:3702,name:"병설2실",qty:19,exc:false,utensil:""},{id:3703,name:"병설3실(보존식)",qty:25,exc:false,utensil:""},{id:3704,name:"늘봄1",qty:16,exc:false,utensil:""},{id:3705,name:"늘봄2",qty:14,exc:false,utensil:""}]},
+  {id:38,name:"대정초",course:"D",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:3801,name:"늘봄1(보존식)",qty:19,exc:false,utensil:""},{id:3802,name:"늘봄2",qty:12,exc:false,utensil:""}]},
+  {id:39,name:"노변초",course:"D",price:1800,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:3901,name:"돌봄1",qty:19,exc:false,utensil:""},{id:3902,name:"돌봄2",qty:22,exc:false,utensil:""},{id:3903,name:"돌봄3",qty:19,exc:false,utensil:""}]},
+  {id:40,name:"옥수초",course:"D",price:2500,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,rooms:[{id:4001,name:"돌봄",qty:13,exc:false,utensil:""}]},
+  {id:41,name:"신매초",course:"D",price:1800,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:4101,name:"초사랑1(보존식)",qty:20,exc:false,utensil:""},{id:4102,name:"초사랑2",qty:9,exc:false,utensil:""}]},
+  {id:42,name:"사월초",course:"D",price:1800,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:4201,name:"늘봄나무",qty:23,exc:false,utensil:""},{id:4202,name:"늘봄꽃(보존식)",qty:18,exc:false,utensil:""}]},
+  {id:43,name:"마동초",course:"D",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:4301,name:"",qty:20,exc:false,utensil:""},{id:4302,name:"늘봄2(보존식)",qty:11,exc:false,utensil:""},{id:4303,name:"늘봄3실",qty:12,exc:false,utensil:""}]},
+  {id:44,name:"율원초",course:"D",price:1800,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:4401,name:"1-1실(보존식)",qty:17,exc:false,utensil:""},{id:4402,name:"2-3실",qty:14,exc:false,utensil:""},{id:4403,name:"3실",qty:5,exc:false,utensil:""}]},
+  {id:45,name:"신월초",course:"D",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,rooms:[{id:4501,name:"1실(보존식)",qty:15,exc:false,utensil:""}]},
+  {id:46,name:"안일초",course:"D",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:4601,name:"2실",qty:15,exc:false,utensil:""},{id:4602,name:"3실",qty:15,exc:false,utensil:""}]},
+  {id:47,name:"국우초",course:"D",price:2000,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:4701,name:"돌봄1",qty:24,exc:false,utensil:""},{id:4702,name:"돌봄2",qty:22,exc:false,utensil:""}]},
+  {id:48,name:"군인초",course:"E",price:2500,code:"",addr:"",delivery:"",principal:"",tel1:"",tel2:"",email1:"",email2:"",note:"",mw:false,
+   rooms:[{id:4801,name:"돌봄1",qty:22,exc:false,utensil:""},{id:4802,name:"돌봄2",qty:29,exc:false,utensil:""},{id:4803,name:"돌봄3",qty:38,exc:false,utensil:""},{id:4804,name:"돌봄4",qty:21,exc:false,utensil:""}]},
+];
+
+const CC={A:'#2d5a3d',B:'#2d4a7a',C:'#7a2d2d',D:'#7a6020',E:'#4a2d7a'};
+const WD=['일','월','화','수','목','금','토'];
+const WD5=['월','화','수','목','금'];
+
+let curDate=null, curFilter='all', smFilter='all', grpByPrice=false;
+let calYear=new Date().getFullYear(), calMonth=new Date().getMonth(), calSchId=null, calEditDate=null;
+let editSchId=null, editRoomId=null, editRoomSchId=null;
+let nextSchId=10000, nextRoomId=1000000;
+
+// ── Firebase 설정 ──
+const firebaseConfig = {
+  apiKey: "AIzaSyD3Yzk1evbhrorIt5ki6jDb-w9MBVx-IdY",
+  authDomain: "snack-order-dffa6.firebaseapp.com",
+  projectId: "snack-order-dffa6",
+  storageBucket: "snack-order-dffa6.firebasestorage.app",
+  messagingSenderId: "700490623226",
+  appId: "1:700490623226:web:7c8e8d3e84f42774124143"
+};
+firebase.initializeApp(firebaseConfig);
+const _db  = firebase.firestore();
+const _ref = _db.collection('snack').doc('main');
+
+let _saveTimer=null;
+let _ignoreSnapshot=false;
+
+// ── DB 로드/저장 ──
+async function loadDB(){
+  const cache=localStorage.getItem('snack_db_v5');
+  if(cache){ try{ const p=JSON.parse(cache); DB.schools=p.schools||[]; DB.history=p.history||{}; DB.dietFork=p.dietFork||{}; DB.courses=p.courses||['A','B','C','D','E']; }catch(e){} }
+  else { DB.schools=JSON.parse(JSON.stringify(INIT_SCHOOLS)); }
+  _initIds();
+
+  try{
+    const snap=await _ref.get();
+    if(snap.exists){
+      const d=snap.data();
+      DB.schools=d.schools||DB.schools;
+      DB.history=d.history||{};
+      DB.dietFork=d.dietFork||{};
+      _initIds();
+      localStorage.setItem('snack_db_v5', JSON.stringify({schools:DB.schools,history:DB.history,dietFork:DB.dietFork}));
+    } else {
+      await _ref.set({schools:DB.schools, history:DB.history, dietFork:DB.dietFork||{}});
+    }
+  }catch(e){ console.warn('Firebase 로드 실패, 로컬 캐시 사용:', e); }
+
+  _ref.onSnapshot(snap=>{
+    if(_ignoreSnapshot) return;
+    if(!snap.exists) return;
+    const d=snap.data();
+    DB.schools=d.schools||[];
+    DB.history=d.history||{};
+    DB.dietFork=d.dietFork||{};
+    DB.courses=d.courses||DB.courses||['A','B','C','D','E'];
+    _initIds();
+    localStorage.setItem('snack_db_v5', JSON.stringify({schools:DB.schools,history:DB.history,dietFork:DB.dietFork}));
+    _refreshCurrentPage();
+    showToast('☁️ 데이터가 동기화됐어요');
+  });
+}
+
+function _initIds(){
+  DB.dietSnacks={}; DB.overrides={};
+  if(DB.schools.length){
+    nextSchId=Math.max(...DB.schools.map(s=>s.id))+1;
+    const ar=DB.schools.flatMap(s=>s.rooms||[]);
+    if(ar.length) nextRoomId=Math.max(...ar.map(r=>r.id))+1;
+  }
+}
+
+function _refreshCurrentPage(){
+  const pages=['order','calendar','schools','invoice','history'];
+  for(const id of pages){
+    const el=document.getElementById('pg-'+id);
+    if(el && el.classList.contains('on')){
+      if(id==='order'){ renderDietList(); renderTable(); }
+      else if(id==='calendar'){ fillCalSel(); renderCal(); }
+      else if(id==='schools'){ renderSchList(); }
+      else if(id==='invoice'){ renderInvoice(); }
+      break;
+    }
+  }
+}
+
+function saveDB(){
+  localStorage.setItem('snack_db_v5', JSON.stringify({schools:DB.schools,history:DB.history,dietFork:DB.dietFork,courses:DB.courses}));
+  if(_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(async ()=>{
+    try{
+      _ignoreSnapshot=true;
+      await _ref.set({schools:DB.schools, history:DB.history, dietFork:DB.dietFork||{}, courses:DB.courses||[]});
+      setTimeout(()=>{ _ignoreSnapshot=false; }, 1000);
+    }catch(e){ console.warn('Firebase 저장 실패:', e); }
+  }, 500);
+}
+
+function showToast(msg){
+  let t=document.getElementById('_toast');
+  if(!t){ t=document.createElement('div'); t.id='_toast';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:8px 18px;border-radius:20px;font-size:12px;font-family:"Noto Sans KR",sans-serif;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none';
+    document.body.appendChild(t); }
+  t.textContent=msg; t.style.opacity='1';
+  setTimeout(()=>{ t.style.opacity='0'; }, 2500);
+}
+function exportData(){
+  const b=new Blob([JSON.stringify({schools:DB.schools,history:DB.history},null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(b);
+  a.download=`간식발주_${new Date().toISOString().split('T')[0]}.json`; a.click();
+}
+function importData(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{ try{const d=JSON.parse(ev.target.result); if(d.schools) DB.schools=d.schools; if(d.history) DB.history=d.history; saveDB(); alert('불러오기 완료!'); location.reload(); }catch(e){alert('파일 오류');} };
+  r.readAsText(f); e.target.value='';
+}
+
+// ── 페이지 ── (invoice 포함 버전은 아래 통합 showPg 사용)
+
+// ── 날짜 (시간대 버그 수정: 로컬 날짜 사용) ──
+function dateStrLocal(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function openDateMod(){ document.getElementById('dtInput').value=curDate||dateStrLocal(new Date()); document.getElementById('ov-date').classList.add('on'); }
+function applyDate(){
+  const v=document.getElementById('dtInput').value; if(!v) return;
+  curDate=v;
+  const p=v.split('-'); const d=new Date(+p[0],+p[1]-1,+p[2]);
+  document.getElementById('navDt').textContent=`${d.getMonth()+1}/${d.getDate()}(${WD[d.getDay()]})`;
+  // 항상 완전 초기화 후 해당 날짜 기록 불러오기
+  DB.dietSnacks={}; DB.overrides={}; DB.dietFork={};
+  if(DB.history[v]){
+    DB.dietSnacks=JSON.parse(JSON.stringify(DB.history[v].dietSnacks||{}));
+    DB.overrides=JSON.parse(JSON.stringify(DB.history[v].overrides||{}));
+    DB.dietFork=JSON.parse(JSON.stringify(DB.history[v].dietFork||{}));
+  }
+  // 없는 가격대는 빈 배열로
+  getPrices().forEach(pr=>{ if(!DB.dietSnacks[pr]) DB.dietSnacks[pr]=['','','']; });
+  closeOv('ov-date'); renderDietList(); renderTable();
+}
+
+// ── 발주표 ──
+function getPrices(){ return [...new Set(DB.schools.map(s=>s.price))].sort((a,b)=>b-a); }
+function renderDietList(){
+  getPrices().forEach(p=>{ if(!DB.dietSnacks[p]) DB.dietSnacks[p]=['','','']; });
+  document.getElementById('dietList').innerHTML=getPrices().map(p=>{
+    const sn=DB.dietSnacks[p]||['','',''];
+    const prev=sn.filter(s=>s).join(', ')||'미입력';
+    const fk=DB.dietFork[p]||{fork:false,spoon:false};
+    return `<div class="dc" id="dc${p}">
+      <div class="dc-hd" onclick="this.closest('.dc').classList.toggle('op')">
+        <span class="dc-p">${p.toLocaleString()}원</span>
+        <span class="dc-prev" id="dcp${p}">${prev}</span>
+      </div>
+      <div class="dc-body">
+        ${[0,1,2].map(i=>`<div class="sn-row"><span class="sn-n">${i+1}</span>
+          <input class="si" type="text" placeholder="품목${i+1}" value="${sn[i]||''}" oninput="onDI(this,${p},${i})">
+        </div>`).join('')}
+        <div style="display:flex;gap:10px;margin:6px 0 4px">
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:10px;font-weight:700;color:var(--mu)">
+            <input type="checkbox" id="forkChkF${p}" ${fk.fork?'checked':''} onchange="onForkChk('fork',this,${p})" style="accent-color:var(--ac);width:13px;height:13px;cursor:pointer">
+            🍴 포크
+          </label>
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:10px;font-weight:700;color:var(--mu)">
+            <input type="checkbox" id="forkChkS${p}" ${fk.spoon?'checked':''} onchange="onForkChk('spoon',this,${p})" style="accent-color:var(--ac);width:13px;height:13px;cursor:pointer">
+            🥄 스푼
+          </label>
+        </div>
+        <button class="btn-ap" onclick="applyDiet(${p})">↓ 이 식단 전체 적용</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function onDI(el,p,i){
+  if(!curDate){ alert('날짜를 먼저 선택해주세요!'); el.value=''; return; }
+  if(!DB.dietSnacks[p]) DB.dietSnacks[p]=['','',''];
+  DB.dietSnacks[p][i]=el.value;
+  document.getElementById('dcp'+p).textContent=DB.dietSnacks[p].filter(s=>s).join(', ')||'미입력';
+}
+function onForkChk(type,el,p){
+  const key=parseInt(p);
+  if(!DB.dietFork[key]) DB.dietFork[key]={fork:false,spoon:false};
+  DB.dietFork[key][type]=el.checked;
+  saveDB();
+  renderTable();
+}
+function applyDiet(p){ DB.schools.filter(s=>s.price===p).forEach(s=>s.rooms.forEach(r=>{ if(DB.overrides[r.id]) delete DB.overrides[r.id].snacks; })); renderTable(); }
+
+function getSnacks(r,s){ return DB.overrides[r.id]?.snacks || DB.dietSnacks[s.price]||['','','']; }
+function getQty(r){ return DB.overrides[r.id]?.qty ?? r.qty; }
+function findRoom(rid){ for(const s of DB.schools){ for(const r of s.rooms){ if(r.id===rid) return {r,s}; } } return null; }
+
+function hasAnySnack3(){
+  return DB.schools.some(s=>s.rooms.some(r=>{
+    const sn=getSnacks(r,s); return !!sn[2];
+  }));
+}
+
+let showDelivery = false;
+function toggleDelivery(){
+  showDelivery=!showDelivery;
+  const btn=document.getElementById('btnDel');
+  btn.textContent=showDelivery?'📍 배송지 표시중':'📍 배송지 숨김';
+  btn.classList.toggle('on',showDelivery);
+  document.querySelectorAll('.del-col').forEach(el=>el.style.display=showDelivery?'':'none');
+  renderTable();
+}
+
+function updateSnackFilter(){
+  const sel=document.getElementById('snackFilter');
+  const prev=sel.value;
+  // 현재 등록된 모든 품목 수집
+  const all=new Set();
+  DB.schools.forEach(s=>s.rooms.forEach(r=>{
+    const sn=getSnacks(r,s);
+    sn.forEach(x=>{ if(x) all.add(x); });
+  }));
+  sel.innerHTML='<option value="">🔍 품목 필터 없음</option>'+
+    [...all].sort().map(x=>`<option value="${x}"${x===prev?' selected':''}>${x}</option>`).join('');
+}
+
+function renderTable(){
+  const mwItem=document.getElementById('mwItem')?.value||'';
+  const snackF=document.getElementById('snackFilter')?.value||'';
+
+  if(!curDate){
+    document.getElementById('ordBody').innerHTML=`<tr><td colspan="11" style="text-align:center;padding:36px;color:var(--mu);font-size:13px"><span onclick="openDateMod()" style="cursor:pointer;text-decoration:underline dotted;color:var(--ac)">📅 먼저 날짜를 선택해주세요</span></td></tr>`;
+    document.getElementById('grandN').textContent='0';
+    document.getElementById('sumChips').innerHTML='';
+    return;
+  }
+  // 품목3 컬럼 표시 여부
+  const show3=hasAnySnack3();
+  document.getElementById('th3').style.display=show3?'':'none';
+
+  // 포크/스푼 컬럼 항상 표시
+  document.getElementById('thFork').style.display='';
+
+  // 인쇄 헤더 업데이트
+  if(curDate){
+    const p=curDate.split('-'); const d=new Date(+p[0],+p[1]-1,+p[2]);
+    document.getElementById('printHeader').textContent=`간식 발주표 · ${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;
+  }
+
+  // 배송지 컬럼 표시 반영
+  document.querySelectorAll('.del-col').forEach(el=>el.style.display=showDelivery?'':'none');
+
+  let html=''; let prevC=null; let grand=0; const totals={};
+  let schools=curFilter==='all'?DB.schools:DB.schools.filter(s=>s.course===curFilter);
+
+  // 품목 필터 적용
+  if(snackF){
+    schools=schools.filter(s=>s.rooms.some(r=>{
+      let sn=[...getSnacks(r,s)];
+      if(mwItem && s.mw) sn[0]=mwItem;
+      return sn.includes(snackF);
+    }));
+  }
+
+  schools.forEach(sch=>{
+    if(sch.course!==prevC){ html+=`<tr class="sep"><td colspan="11">── ${sch.course}코스</td></tr>`; prevC=sch.course; }
+
+    // 필터 통과한 실 목록
+    let visRooms=sch.rooms.filter(r=>{
+      let sn=[...getSnacks(r,sch)]; if(mwItem&&sch.mw) sn[0]=mwItem;
+      return !snackF||sn.includes(snackF);
+    });
+    if(!visRooms.length) return;
+
+    // 각 실의 실제 배송지 (실 배송지 우선, 없으면 학교 배송지)
+    const getRoomDel=r=>r.delivery||sch.delivery||'';
+
+    // 연속된 같은 배송지끼리 rowspan 계산
+    // delSpan[i] = 이 행부터 몇 칸 묶을지 (1이면 단독, 0이면 윗 행에 흡수됨)
+    const delSpan=visRooms.map(()=>1);
+    for(let i=0;i<visRooms.length;i++){
+      if(delSpan[i]===0) continue;
+      for(let j=i+1;j<visRooms.length;j++){
+        if(getRoomDel(visRooms[j])===getRoomDel(visRooms[i])){
+          delSpan[i]++;
+          delSpan[j]=0;
+        } else break;
+      }
+    }
+
+    visRooms.forEach((r,ri)=>{
+      let sn=[...getSnacks(r,sch)];
+      if(mwItem && sch.mw) sn[0]=mwItem;
+
+      const qty=getQty(r); grand+=qty;
+      sn.forEach(x=>{ if(x) totals[x]=(totals[x]||0)+qty; });
+      const isMw=sch.mw&&mwItem;
+      const fk=DB.dietFork[sch.price]||DB.dietFork[String(sch.price)]||{fork:false,spoon:false};
+      const anyFork=fk.fork||fk.spoon;
+      const forkLabel=anyFork?[fk.fork?'포크':'',fk.spoon?'스푼':''].filter(Boolean).join('/'):'';
+      const d3=!show3?'style="display:none"':'';
+      const delStyle=showDelivery?'':'display:none';
+
+      // 배송지 td: span>0이면 표시(rowspan), 0이면 생략
+      let delTd='';
+      if(delSpan[ri]>0){
+        const rs=delSpan[ri]>1?` rowspan="${delSpan[ri]}"`:'';
+        delTd=`<td class="tl del-col"${rs} style="${delStyle};vertical-align:middle">${getRoomDel(r)}</td>`;
+      }
+
+      html+=`<tr class="${r.exc?'exc-r':''} ${isMw?'mw-r':''}">
+        <td><span class="cb" style="background:${CC[sch.course]}">${sch.course}</span></td>
+        <td><span class="ptag">${sch.price.toLocaleString()}</span></td>
+        <td class="tl">${sch.name}${r.exc?'<span style="color:#c4622d;font-size:8px;margin-left:2px">예외</span>':''}${isMw?'<span class="mw-tag" style="margin-left:2px">🔥</span>':''}</td>
+        <td class="tl">${r.name}</td>
+        ${delTd}
+        <td><input class="qi" type="number" value="${qty}" min="0" onchange="onQC(this,${r.id})"></td>
+        <td><input class="sci${sn[0]?' f':''}" type="text" placeholder="품목1" value="${sn[0]||''}" oninput="onSC(this,${r.id},0)"></td>
+        <td><input class="sci${sn[1]?' f':''}" type="text" placeholder="품목2" value="${sn[1]||''}" oninput="onSC(this,${r.id},1)"></td>
+        <td ${d3}><input class="sci${sn[2]?' f':''} ${!sn[2]?'p3-none':''}" type="text" placeholder="품목3" value="${sn[2]||''}" oninput="onSC(this,${r.id},2)"></td>
+        <td id="thFork${r.id}" style="text-align:center;font-size:11px;font-weight:700;color:var(--ac)">${forkLabel}</td>
+        <td class="tc" id="tt${r.id}">${qty}</td>
+      </tr>`;
+    });
+  });
+
+  document.getElementById('ordBody').innerHTML=html;
+  document.getElementById('grandN').textContent=grand.toLocaleString();
+  document.getElementById('sumChips').innerHTML=Object.entries(totals).sort((a,b)=>b[1]-a[1])
+    .map(([n,c])=>`<div class="sum-chip"><span class="sum-nm">${n}</span><span class="sum-c">${c.toLocaleString()}</span></div>`).join('');
+  updateSnackFilter();
+}
+
+function updateSummary(){
+  const mwItem=document.getElementById('mwItem')?.value||'';
+  const snackF=document.getElementById('snackFilter')?.value||'';
+  let schools=curFilter==='all'?DB.schools:DB.schools.filter(s=>s.course===curFilter);
+  let grand=0;
+  const totals={};
+  schools.forEach(sch=>{
+    sch.rooms.forEach(r=>{
+      const sn=[...getSnacks(r,sch)];
+      if(mwItem && sch.mw) sn[0]=mwItem;
+      if(snackF && !sn.includes(snackF)) return;
+      const qty=getQty(r);
+      grand+=qty;
+      sn.filter(x=>x).forEach(x=>{ totals[x]=(totals[x]||0)+qty; });
+    });
+  });
+  document.getElementById('grandN').textContent=grand.toLocaleString();
+  document.getElementById('sumChips').innerHTML=Object.entries(totals).sort((a,b)=>b[1]-a[1])
+    .map(([n,c])=>`<div class="sum-chip"><span class="sum-nm">${n}</span><span class="sum-c">${c.toLocaleString()}</span></div>`).join('');
+}
+
+function syncAll(){
+  updateSummary();
+  if(document.getElementById('pg-calendar').classList.contains('on')) renderCal();
+  if(document.getElementById('pg-invoice').classList.contains('on')) renderInvoice();
+}
+
+function onQC(el,rid){
+  if(!DB.overrides[rid]) DB.overrides[rid]={};
+  DB.overrides[rid].qty=parseInt(el.value)||0;
+  const {r,s}=findRoom(rid)||{};
+  if(!r) return;
+  document.getElementById('tt'+rid).textContent=DB.overrides[rid].qty;
+  syncAll();
+}
+function onSC(el,rid,i){
+  const found=findRoom(rid); if(!found) return;
+  if(!DB.overrides[rid]) DB.overrides[rid]={};
+  if(!DB.overrides[rid].snacks) DB.overrides[rid].snacks=[...getSnacks(found.r,found.s)];
+  DB.overrides[rid].snacks[i]=el.value;
+  el.classList.toggle('f',!!el.value);
+  syncAll();
+}
+
+function onUT(el,rid){
+  if(!DB.overrides[rid]) DB.overrides[rid]={};
+  DB.overrides[rid].utensil=el.value;
+  el.classList.toggle('f',!!el.value);
+}
+
+function setF(f,btn){ curFilter=f; document.querySelectorAll('.tbar .fb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); renderTable(); }
+
+function saveDateRec(){
+  if(!curDate){ alert('날짜를 먼저 선택해주세요!'); return; }
+  if(!DB.history[curDate]) DB.history[curDate]={dietSnacks:{},overrides:{},dietFork:{},offdays:{}};
+  DB.history[curDate].dietSnacks=JSON.parse(JSON.stringify(DB.dietSnacks));
+  DB.history[curDate].overrides=JSON.parse(JSON.stringify(DB.overrides));
+  DB.history[curDate].dietFork=JSON.parse(JSON.stringify(DB.dietFork));
+  // 포크/스푼 override도 함께 저장 (이미 DB.overrides에 포함됨)
+  saveDB();
+  syncAll();
+  const btn=document.querySelector('.btn-sv');
+  btn.textContent='✓ 저장됨!'; setTimeout(()=>btn.textContent='💾 저장',1500);
+}
+
+// ── 엑셀 다운로드 ──
+function exportExcel(){
+  const mwItem=document.getElementById('mwItem')?.value||'';
+  const dateLabel=curDate||'날짜미선택';
+  let p=curDate?curDate.split('-'):null;
+  let d=p?new Date(+p[0],+p[1]-1,+p[2]):new Date();
+  const dateTitle=`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;
+
+  let schools=curFilter==='all'?DB.schools:DB.schools.filter(s=>s.course===curFilter);
+  const snackF=document.getElementById('snackFilter')?.value||'';
+
+  // BOM for Korean encoding
+  let csv='\uFEFF';
+  csv+=`간식 발주표,${dateTitle}\n`;
+  csv+=`코스,금액,학교명,실/반,배송지,수량,품목1,품목2,품목3,포크/스푼,합계\n`;
+
+  schools.forEach(sch=>{
+    sch.rooms.forEach(r=>{
+      let sn=[...getSnacks(r,sch)];
+      if(mwItem && sch.mw) sn[0]=mwItem;
+      if(snackF && !sn.includes(snackF)) return;
+      const qty=getQty(r);
+      const tot=qty*sn.filter(x=>x).length;
+      const ut=DB.overrides[r.id]?.utensil??r.utensil??'';
+      const row=[
+        sch.course,
+        sch.price,
+        sch.name,
+        r.name,
+        sch.delivery||'',
+        qty,
+        sn[0]||'',
+        sn[1]||'',
+        sn[2]||'',
+        ut,
+        tot
+      ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');
+      csv+=row+'\n';
+    });
+  });
+
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`간식발주_${dateLabel}.csv`;
+  a.click();
+}
+
+// ── 검색형 학교 선택 위젯 ──────────────────────────
+// pickerId: 'calSchPicker' | 'invSchPicker'
+// onSelect(schId) 콜백으로 선택 전달
+const _schPickerCbs={};
+
+function initSchPicker(pickerId, onSelect){
+  _schPickerCbs[pickerId]=onSelect;
+  // 외부 클릭 시 닫기
+  document.addEventListener('click', e=>{
+    const picker=document.getElementById(pickerId);
+    if(picker && !picker.contains(e.target)) closeSchPicker(pickerId);
+  }, true);
+}
+
+function toggleSchPicker(pickerId){
+  const drop=document.getElementById(pickerId).querySelector('.sch-picker-drop');
+  const isOpen=drop.classList.contains('open');
+  if(isOpen){ closeSchPicker(pickerId); return; }
+  // 목록 갱신 후 열기
+  renderSchPickerList(pickerId,'');
+  drop.classList.add('open');
+  drop.querySelector('.sch-picker-search').value='';
+  drop.querySelector('.sch-picker-search').focus();
+}
+
+function closeSchPicker(pickerId){
+  document.getElementById(pickerId)?.querySelector('.sch-picker-drop')?.classList.remove('open');
+}
+
+function filterSchPicker(pickerId, q){
+  renderSchPickerList(pickerId, q.trim().toLowerCase());
+}
+
+function renderSchPickerList(pickerId, q){
+  const listEl=document.getElementById(pickerId).querySelector('.sch-picker-list');
+  const curId=pickerId==='calSchPicker' ? calSchId : invLastSchId;
+  const filtered=q ? DB.schools.filter(s=>s.name.toLowerCase().includes(q)) : DB.schools;
+  if(!filtered.length){
+    listEl.innerHTML=`<div class="sch-picker-empty">검색 결과 없음</div>`;
+    return;
+  }
+  listEl.innerHTML=filtered.map(s=>`
+    <div class="sch-picker-item${s.id===curId?' sel':''}" onclick="selectSchPicker('${pickerId}',${s.id},'${s.name}')">${s.name}</div>
+  `).join('');
+}
+
+function selectSchPicker(pickerId, schId, schName){
+  document.getElementById(pickerId).querySelector('.sch-picker-input').value=schName;
+  closeSchPicker(pickerId);
+  if(_schPickerCbs[pickerId]) _schPickerCbs[pickerId](schId);
+}
+
+function setSchPickerValue(pickerId, schId){
+  const sch=DB.schools.find(s=>s.id===schId);
+  if(!sch) return;
+  document.getElementById(pickerId).querySelector('.sch-picker-input').value=sch.name;
+}
+
+// ── 달력 (주말 제거, 공휴일, 재량휴업) ──
+function fillCalSel(){
+  if(!calSchId && DB.schools.length) calSchId=DB.schools[0].id;
+  setSchPickerValue('calSchPicker', calSchId);
+}
+
+function isOffday(dateStr){
+  return DB.history[dateStr]?.offdays?.global===true;
+}
+function toggleOffday(dateStr){
+  if(!DB.history[dateStr]) DB.history[dateStr]={dietSnacks:{},overrides:{},offdays:{}};
+  if(!DB.history[dateStr].offdays) DB.history[dateStr].offdays={};
+  DB.history[dateStr].offdays.global=!DB.history[dateStr].offdays.global;
+  saveDB(); renderCal();
+}
+
+function renderCal(){
+  calSchId=calSchId||DB.schools[0]?.id;
+  const sch=DB.schools.find(s=>s.id===calSchId);
+  document.getElementById('calLbl').textContent=`${calYear}년 ${calMonth+1}월`;
+
+  document.getElementById('calHds').innerHTML=WD5.map(d=>`<div class="cal-hd">${d}</div>`).join('');
+
+  const today=new Date(); today.setHours(0,0,0,0);
+  const todayStr=dateStrLocal(today);
+
+  const y=calYear, m=calMonth;
+  const firstDayOfMonth=new Date(y,m,1).getDay(); // 0=일,1=월,2=화,3=수,4=목,5=금,6=토
+  const daysInMonth=new Date(y,m+1,0).getDate();
+
+  // 평일(월~금)만 날짜 숫자 수집
+  const cells=[];
+  for(let day=1;day<=daysInMonth;day++){
+    const wd=new Date(y,m,day).getDay();
+    if(wd===0||wd===6) continue;
+    cells.push(day);
+  }
+
+  // 1일 앞 빈칸 수: 월(1)=0, 화(2)=1, 수(3)=2, 목(4)=3, 금(5)=4, 토/일=0
+  const blankCount=(firstDayOfMonth>=1&&firstDayOfMonth<=5)?(firstDayOfMonth-1):0;
+  let html='';
+  for(let i=0;i<blankCount;i++) html+=`<div></div>`;
+
+  cells.forEach(day=>{
+    // ds를 직접 문자열로 구성 (dateStrLocal 통한 Date객체 변환 오류 방지)
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const dt=new Date(y,m,day);
+    const isT=ds===todayStr;
+    const hol=getHoliday(ds);
+    const off=isOffday(ds);
+
+    // 이 날짜가 현재 발주표 작업중인 날이면 라이브 메모리 사용, 아니면 history
+    const isLive = ds===curDate;
+    const overrides = isLive ? DB.overrides : (DB.history[ds]?.overrides||{});
+    const dietSnacks = isLive ? DB.dietSnacks : (DB.history[ds]?.dietSnacks||{});
+
+    const hasD = isLive ? Object.keys(DB.overrides).length>0 : !!(DB.history[ds] && Object.keys(DB.history[ds].overrides||{}).length>0);
+
+    let roomsHtml=''; let total=0; let snLabel='';
+    if(sch){
+      // 품목: 이 학교 첫 실 override → dietSnacks → 빈값 순으로 한 번만 표시
+      const firstR=sch.rooms[0];
+      const snArr = overrides[firstR?.id]?.snacks || dietSnacks[sch.price] || [];
+      snLabel = snArr.filter(Boolean).join(', ');
+
+      sch.rooms.forEach(r=>{
+        const qty = overrides[r.id]?.qty ?? r.qty;
+        total+=qty;
+        roomsHtml+=`<div class="cal-rrow"><span class="cal-rnm">${r.name||sch.name}</span><span class="cal-rq">${qty}</span></div>`;
+      });
+
+      if(snLabel) roomsHtml=`<div class="cal-snlbl">${snLabel}</div>`+roomsHtml;
+    }
+
+    const cls=['cal-cell',isT?'td':'',hasD&&!hol&&!off?'hd':'',hol?'holiday':'',off?'offday':''].filter(Boolean).join(' ');
+
+    html+=`<div class="${cls}" onclick="openCalDay('${ds}')">
+      <div class="cal-dn">${dt.getDate()}</div>
+      ${hol?`<div class="cal-hol-name">🎌 ${hol}</div>`:''}
+      ${off?`<div class="cal-off-badge">재량휴업</div>`:''}
+      ${(!hol&&!off)||(off&&total>0)||snLabel?`<div class="cal-rooms">${roomsHtml}</div><div class="cal-total">${total}명</div>`:''}
+      <button class="off-toggle ${off?'active':''}" onclick="event.stopPropagation();toggleOffday('${ds}')" title="재량휴업일 설정">${off?'휴업✓':'휴업?'}</button>
+    </div>`;
+  });
+
+  document.getElementById('calGrid').innerHTML=html;
+
+  // 인쇄용 제목 업데이트
+  if(sch){
+    document.getElementById('calPrintHeader').textContent=`${sch.name} ${calYear}년 ${calMonth+1}월 간식단 (${sch.price.toLocaleString()}원)`;
+  }
+
+}
+
+function calMov(dir){ calMonth+=dir; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderCal(); }
+
+function openCalDay(ds){
+  const p=ds.split('-'); const d=new Date(+p[0],+p[1]-1,+p[2]);
+  calEditDate=ds;
+  const sch=DB.schools.find(s=>s.id===calSchId);
+
+  // 현재 발주표 작업중인 날이면 라이브 메모리, 아니면 history
+  const isLive = ds===curDate;
+  const overrides = isLive ? DB.overrides : (DB.history[ds]?.overrides||{});
+  const dietSnacks = isLive ? DB.dietSnacks : (DB.history[ds]?.dietSnacks||{});
+
+  document.getElementById('calModTitle').textContent=`${d.getMonth()+1}/${d.getDate()} · ${sch?.name}`;
+  document.getElementById('calRoomInputs').innerHTML=(sch?.rooms||[]).map(r=>{
+    const qty=overrides[r.id]?.qty??r.qty;
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <label style="font-size:12px;min-width:90px;color:var(--txt)">${r.name||'(전체)'}</label>
+      <input type="number" value="${qty}" min="0" data-rid="${r.id}" style="width:70px;border:1px solid var(--bdr);border-radius:5px;padding:4px 7px;font-size:12px;font-family:'DM Mono',monospace;outline:none;text-align:center" onfocus="this.style.borderColor='var(--ac)'" onblur="this.style.borderColor='var(--bdr)'">
+    </div>`;
+  }).join('');
+
+  // 품목: 첫 실 override → dietSnacks[price] → 빈값
+  const firstRoom=sch?.rooms[0];
+  let sn=['','',''];
+  if(firstRoom && overrides[firstRoom.id]?.snacks){
+    sn=overrides[firstRoom.id].snacks;
+  } else {
+    sn=dietSnacks[sch?.price]||['','',''];
+  }
+  document.getElementById('cal-s1').value=sn[0]||'';
+  document.getElementById('cal-s2').value=sn[1]||'';
+  document.getElementById('cal-s3').value=sn[2]||'';
+  document.getElementById('ov-cal').classList.add('on');
+}
+
+function saveCalDay(){
+  if(!DB.history[calEditDate]) DB.history[calEditDate]={dietSnacks:{},overrides:{},offdays:{}};
+  if(!DB.history[calEditDate].overrides) DB.history[calEditDate].overrides={};
+  const sch=DB.schools.find(s=>s.id===calSchId);
+  const isLive = calEditDate===curDate;
+
+  const snacks=[
+    document.getElementById('cal-s1').value,
+    document.getElementById('cal-s2').value,
+    document.getElementById('cal-s3').value
+  ];
+
+  document.querySelectorAll('#calRoomInputs input[data-rid]').forEach(inp=>{
+    const rid=parseInt(inp.dataset.rid);
+    const newQty=parseInt(inp.value)||0;
+    // history에 저장
+    if(!DB.history[calEditDate].overrides[rid]) DB.history[calEditDate].overrides[rid]={};
+    DB.history[calEditDate].overrides[rid].qty=newQty;
+    // 라이브 메모리에도 동기화
+    if(isLive){ if(!DB.overrides[rid]) DB.overrides[rid]={}; DB.overrides[rid].qty=newQty; }
+  });
+
+  // 품목: 이 학교 각 실에 override로 저장
+  if(sch){
+    sch.rooms.forEach(r=>{
+      if(!DB.history[calEditDate].overrides[r.id]) DB.history[calEditDate].overrides[r.id]={};
+      DB.history[calEditDate].overrides[r.id].snacks=snacks;
+      if(isLive){ if(!DB.overrides[r.id]) DB.overrides[r.id]={}; DB.overrides[r.id].snacks=snacks; }
+    });
+  }
+
+  saveDB(); closeOv('ov-cal'); renderCal();
+  if(isLive){ renderDietList(); renderTable(); }
+  syncAll();
+}
+
+// ── 학교관리 ──
+function getCourses(){ return DB.courses||['A','B','C','D','E']; }
+
+function toggleGrp(){ grpByPrice=!grpByPrice; document.getElementById('grpBtn').classList.toggle('on',grpByPrice); renderSchList(); }
+
+function renderCourseFilters(){
+  // 학교관리 필터
+  const smBtns=document.getElementById('smFilterBtns');
+  if(smBtns){
+    smBtns.innerHTML=`<button class="fb ${smFilter==='all'?'on':''}" onclick="setSmF('all',this)">전체</button>`
+      +getCourses().map(c=>`<button class="fb ${smFilter===c?'on':''}" onclick="setSmF('${c}',this)">${c}</button>`).join('');
+  }
+  // 발주표 필터
+  const tbar=document.querySelector('.tbar .fb-group');
+  if(tbar){
+    tbar.innerHTML=`<button class="fb on" onclick="setF('all',this)">전체</button>`
+      +getCourses().map(c=>`<button class="fb" onclick="setF('${c}',this)">${c}코스</button>`).join('');
+  }
+  // 학교 추가/수정 모달 셀렉트
+  const sel=document.getElementById('sf-course');
+  if(sel){
+    const cur=sel.value;
+    sel.innerHTML=getCourses().map(c=>`<option value="${c}">${c}</option>`).join('');
+    if(getCourses().includes(cur)) sel.value=cur;
+  }
+}
+
+function openCourseMgr(){
+  renderCourseList();
+  document.getElementById('ov-course').classList.add('on');
+}
+
+function renderCourseList(){
+  const list=document.getElementById('courseList');
+  list.innerHTML=getCourses().map((c,i)=>`
+    <div class="course-item" draggable="true" data-idx="${i}"
+      ondragstart="courseDragStart(event,${i})" ondragover="courseDragOver(event)" ondrop="courseDropOn(event,${i})"
+      style="display:flex;align-items:center;gap:8px;background:var(--sur);border:1px solid var(--bdr);border-radius:7px;padding:8px 12px;cursor:grab">
+      <span style="font-size:16px;cursor:grab;color:var(--mu)">☰</span>
+      <input value="${c}" onchange="renameCourse(${i},this.value)"
+        style="flex:1;border:none;background:transparent;font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;outline:none">
+      <button onclick="deleteCourse(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;padding:2px 6px">✕</button>
+    </div>
+  `).join('');
+}
+
+let _dragIdx=null;
+function courseDragStart(e,i){ _dragIdx=i; e.dataTransfer.effectAllowed='move'; }
+function courseDragOver(e){ e.preventDefault(); e.dataTransfer.dropEffect='move'; }
+function courseDropOn(e,i){
+  e.preventDefault();
+  if(_dragIdx===null||_dragIdx===i) return;
+  const arr=getCourses();
+  const [moved]=arr.splice(_dragIdx,1);
+  arr.splice(i,0,moved);
+  DB.courses=arr;
+  saveDB();
+  renderCourseList();
+  renderCourseFilters();
+  renderSchList();
+}
+
+function renameCourse(i,val){
+  const old=DB.courses[i];
+  val=val.trim();
+  if(!val||val===old) return;
+  if(DB.courses.includes(val)){ alert('이미 있는 코스예요'); return; }
+  DB.courses[i]=val;
+  DB.schools.forEach(s=>{ if(s.course===old) s.course=val; });
+  saveDB(); renderCourseList(); renderCourseFilters(); renderSchList();
+}
+
+function addCourse(){
+  const inp=document.getElementById('newCourseName');
+  const val=inp.value.trim();
+  if(!val){ alert('코스 이름을 입력해주세요'); return; }
+  if(DB.courses.includes(val)){ alert('이미 있는 코스예요'); return; }
+  DB.courses.push(val);
+  saveDB(); renderCourseList(); renderCourseFilters(); renderSchList();
+  inp.value='';
+}
+
+function deleteCourse(i){
+  const name=DB.courses[i];
+  const cnt=DB.schools.filter(s=>s.course===name).length;
+  if(cnt>0 && !confirm(`${name}코스 학교가 ${cnt}개 있어요. 그래도 삭제할까요?`)) return;
+  DB.courses.splice(i,1);
+  saveDB(); renderCourseList(); renderCourseFilters(); renderSchList();
+}
+
+
+function setSmF(f,btn){ smFilter=f; document.querySelectorAll('.sm-top .fb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); renderSchList(); }
+
+function renderSchList(){
+  const q=(document.getElementById('schSearch')?.value||'').trim().toLowerCase();
+  let schs=smFilter==='all'?DB.schools:DB.schools.filter(s=>s.course===smFilter);
+  if(q) schs=schs.filter(s=>s.name.toLowerCase().includes(q));
+
+  function card(s){
+    const gi=DB.schools.indexOf(s);
+    const totalQty=s.rooms.reduce((a,r)=>a+r.qty,0);
+    const rooms=s.rooms.map(r=>`<div class="room-item">
+      <span class="room-nm">${r.name||'(전체)'} ${r.exc?'⚠️':''}</span>
+      ${r.delivery?`<span style="font-size:9px;color:var(--ac2);margin-left:4px">📍${r.delivery}</span>`:''}
+      <span class="room-qty">${r.qty}명</span>
+      <div class="room-acts">
+        <button class="sib" onclick="openEditRoom(${s.id},${r.id})">수정</button>
+        <button class="sib del" onclick="deleteRoom(${s.id},${r.id})">삭제</button>
+      </div>
+    </div>`).join('');
+    return `<div class="sch-group" draggable="true" data-schid="${s.id}"
+      ondragstart="schDragStart(event,'${s.id}')"
+      ondragover="schDragOver(event)"
+      ondrop="schDropOn(event,'${s.id}')"
+      ondragend="schDragEnd()"
+      style="cursor:default">
+      <div class="sch-g-hd" data-sid="${s.id}" onclick="toggleSch(this)">
+        <div class="arr-btns" onclick="event.stopPropagation()" title="드래그해서 순서 변경" style="cursor:grab;font-size:16px;color:var(--mu);padding:0 4px">☰</div>
+        <span class="sch-badge" style="background:${CC[s.course]||'#555'}">${s.course}</span>
+        <div class="sch-g-info">
+          <div class="sch-g-name">${s.name} ${s.mw?'<span class="mw-tag">🔥</span>':''}</div>
+          <div class="sch-g-sub">${s.rooms.length}개 실·${totalQty}명·${s.price.toLocaleString()}원${s.delivery?'·'+s.delivery:''}</div>
+        </div>
+        <div class="sch-g-acts" onclick="event.stopPropagation()">
+          <button class="sib" onclick="openEditSch(${s.id})">수정</button>
+          <button class="sib del" onclick="deleteSch(${s.id})">삭제</button>
+        </div>
+      </div>
+      <div class="sch-g-body">
+        <div class="detail-grid" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="di"><label>고유번호</label><span>${s.code||'-'}</span></div>
+          <div class="di"><label>학교장</label><span>${s.principal||'-'}</span></div>
+          <div class="di"></div>
+          <div class="di"><label>행정실 전화</label><span>${s.tel1||'-'}</span></div>
+          <div class="di"><label>늘봄실 전화</label><span>${s.tel2||'-'}</span></div>
+          <div class="di"></div>
+          <div class="di"><label>행정실 이메일</label><span>${s.email1||'-'}</span></div>
+          <div class="di"><label>늘봄실 이메일</label><span>${s.email2||'-'}</span></div>
+          <div class="di"></div>
+          <div class="di" style="grid-column:1/-1"><label>주소</label><span>${s.addr||'-'}</span></div>
+          <div class="di" style="grid-column:1/-1"><label>간식 배송지</label><span style="font-weight:600;color:var(--ac2)">${s.delivery||'-'}</span></div>
+        </div>
+        ${s.mw?'<div style="margin-bottom:8px"><span class="mw-tag">🔥 전자레인지 있음</span></div>':''}
+        ${s.note?`<div class="sch-note">📝 ${s.note}</div>`:''}
+        <div class="room-list">${rooms}</div>
+        <button class="add-room-btn" onclick="openAddRoom(${s.id})">+ 실/반 추가</button>
+      </div>
+    </div>`;
+  }
+
+  let html='';
+  if(grpByPrice&&!q){
+    const prices=[...new Set(schs.map(s=>s.price))].sort((a,b)=>b-a);
+    prices.forEach(p=>{ const g=schs.filter(s=>s.price===p); html+=`<div class="price-grp-hd">${p.toLocaleString()}원 식단 <span class="pgcnt">${g.length}개교</span></div>`; g.forEach(s=>{ html+=card(s); }); });
+  } else { schs.forEach(s=>{ html+=card(s); }); }
+
+  document.getElementById('schList').innerHTML=html||'<div style="text-align:center;padding:28px;color:var(--mu)">검색 결과 없음</div>';
+}
+
+let _schDragId=null;
+
+function schDragStart(e, schId){
+  _schDragId=parseInt(schId);
+  e.dataTransfer.effectAllowed='move';
+  e.currentTarget.style.opacity='0.4';
+}
+function schDragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  e.currentTarget.style.background='var(--acl)';
+}
+function schDropOn(e, schId){
+  e.preventDefault();
+  e.currentTarget.style.background='';
+  const toId=parseInt(schId);
+  if(_schDragId===null||_schDragId===toId) return;
+  const fromIdx=DB.schools.findIndex(s=>s.id===_schDragId);
+  const toIdx=DB.schools.findIndex(s=>s.id===toId);
+  if(fromIdx<0||toIdx<0) return;
+  const [moved]=DB.schools.splice(fromIdx,1);
+  DB.schools.splice(toIdx,0,moved);
+  saveDB(); renderSchList();
+  setTimeout(()=>{
+    const hd=document.querySelector(`.sch-g-hd[data-sid="${_schDragId}"]`);
+    if(hd) hd.classList.add('exp');
+  },50);
+}
+function schDragEnd(){
+  _schDragId=null;
+  document.querySelectorAll('.sch-group').forEach(el=>{
+    el.style.opacity=''; el.style.background='';
+  });
+}
+
+function moveSchool(i,d){ const ni=i+d; if(ni<0||ni>=DB.schools.length) return; [DB.schools[i],DB.schools[ni]]=[DB.schools[ni],DB.schools[i]]; saveDB(); renderSchList(); }
+function toggleSch(hd){ hd.classList.toggle('exp'); }
+function deleteSch(id){ if(!confirm('삭제할까요?')) return; DB.schools=DB.schools.filter(s=>s.id!==id); saveDB(); renderSchList(); }
+
+function _fillCourseSelect(val){
+  const sel=document.getElementById('sf-course');
+  sel.innerHTML=getCourses().map(c=>`<option value="${c}">${c}</option>`).join('');
+  if(val && getCourses().includes(val)) sel.value=val;
+}
+
+function openAddSch(){
+  editSchId=null; document.getElementById('schModTitle').textContent='학교 추가';
+  ['name','code','addr','delivery','principal','tel1','tel2','email1','email2'].forEach(f=>document.getElementById('sf-'+f).value='');
+  document.getElementById('sf-price').value='2000';
+  _fillCourseSelect(getCourses()[0]);
+  document.getElementById('sf-note').value=''; document.getElementById('sf-mw').checked=false;
+  document.getElementById('sf-classtype').value='늘봄교실';
+  document.getElementById('ov-sch').classList.add('on');
+}
+function openEditSch(id){
+  editSchId=id; const s=DB.schools.find(x=>x.id===id);
+  document.getElementById('schModTitle').textContent='학교 수정';
+  ['name','code','addr','delivery','principal','tel1','tel2','email1','email2'].forEach(f=>document.getElementById('sf-'+f).value=s[f]||'');
+  document.getElementById('sf-price').value=s.price;
+  _fillCourseSelect(s.course);
+  document.getElementById('sf-note').value=s.note||''; document.getElementById('sf-mw').checked=!!s.mw;
+  document.getElementById('sf-classtype').value=s.classtype||'늘봄교실';
+  document.getElementById('ov-sch').classList.add('on');
+}
+function saveSch(){
+  const name=document.getElementById('sf-name').value.trim(); if(!name){ alert('학교명 입력'); return; }
+  const data={name,code:document.getElementById('sf-code').value,addr:document.getElementById('sf-addr').value,
+    delivery:document.getElementById('sf-delivery').value,principal:document.getElementById('sf-principal').value,
+    tel1:document.getElementById('sf-tel1').value,tel2:document.getElementById('sf-tel2').value,
+    email1:document.getElementById('sf-email1').value,email2:document.getElementById('sf-email2').value,
+    price:parseInt(document.getElementById('sf-price').value)||2000,course:document.getElementById('sf-course').value,
+    note:document.getElementById('sf-note').value,mw:document.getElementById('sf-mw').checked,
+    classtype:document.getElementById('sf-classtype').value||'늘봄교실'};
+  if(editSchId){ const idx=DB.schools.findIndex(s=>s.id===editSchId); DB.schools[idx]={...DB.schools[idx],...data}; }
+  else DB.schools.push({id:nextSchId++,...data,rooms:[]});
+  const targetId=editSchId||nextSchId-1;
+  saveDB(); closeOv('ov-sch'); renderSchList();
+  // 저장한 학교 자동 펼치기
+  setTimeout(()=>{
+    const hd=document.querySelector(`.sch-g-hd[data-sid="${targetId}"]`);
+    if(hd && !hd.classList.contains('exp')) hd.classList.add('exp');
+    hd?.scrollIntoView({behavior:'smooth', block:'center'});
+  }, 50);
+}
+
+// 실 모달
+
+function openAddRoom(sid){ editRoomId=null; editRoomSchId=sid; document.getElementById('roomModTitle').textContent='실/반 추가'; document.getElementById('rf-name').value=''; document.getElementById('rf-qty').value='20'; document.getElementById('rf-delivery').value=''; document.getElementById('rf-exc').value='0'; document.getElementById('ov-room').classList.add('on'); }
+function openEditRoom(sid,rid){ editRoomId=rid; editRoomSchId=sid; const s=DB.schools.find(x=>x.id===sid); const r=s?.rooms.find(x=>x.id===rid); document.getElementById('roomModTitle').textContent='실/반 수정'; document.getElementById('rf-name').value=r?.name||''; document.getElementById('rf-qty').value=r?.qty??20;
+  document.getElementById('rf-delivery').value=r?.delivery||''; document.getElementById('rf-exc').value=r?.exc?'1':'0'; document.getElementById('ov-room').classList.add('on'); }
+function saveRoom(){
+  const s=DB.schools.find(x=>x.id===editRoomSchId); if(!s) return;
+  const data={name:document.getElementById('rf-name').value.trim(),qty:parseInt(document.getElementById('rf-qty').value)||0,delivery:document.getElementById('rf-delivery').value.trim(),exc:document.getElementById('rf-exc').value==='1'};
+  if(editRoomId){ const idx=s.rooms.findIndex(r=>r.id===editRoomId); s.rooms[idx]={...s.rooms[idx],...data}; }
+  else s.rooms.push({id:nextRoomId++,...data});
+  saveDB(); closeOv('ov-room'); renderSchList();
+  setTimeout(()=>{
+    const hd=document.querySelector(`.sch-g-hd[data-sid="${editRoomSchId}"]`);
+    if(hd && !hd.classList.contains('exp')) hd.classList.add('exp');
+    hd?.scrollIntoView({behavior:'smooth', block:'center'});
+  }, 50);
+}
+function deleteRoom(sid,rid){ if(!confirm('삭제?')) return; const s=DB.schools.find(x=>x.id===sid); if(!s) return; s.rooms=s.rooms.filter(r=>r.id!==rid); saveDB(); renderSchList();
+  setTimeout(()=>{
+    const hd=document.querySelector(`.sch-g-hd[data-sid="${sid}"]`);
+    if(hd && !hd.classList.contains('exp')) hd.classList.add('exp');
+  }, 50);
+}
+
+// ── 기록 ──
+function renderHist(){
+  const entries=Object.entries(DB.history).sort((a,b)=>b[0].localeCompare(a[0]));
+  if(!entries.length){ document.getElementById('histList').innerHTML='<div style="text-align:center;padding:36px;color:var(--mu)">저장된 기록이 없어요</div>'; return; }
+  document.getElementById('histList').innerHTML=entries.map(([dt,data])=>{
+    const p=dt.split('-'); const d=new Date(+p[0],+p[1]-1,+p[2]);
+    const label=`${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;
+    const totals={};
+    DB.schools.forEach(s=>s.rooms.forEach(r=>{ const sn=data.overrides?.[r.id]?.snacks||data.dietSnacks?.[s.price]||[]; const qty=data.overrides?.[r.id]?.qty??r.qty; sn.forEach(x=>{ if(x) totals[x]=(totals[x]||0)+qty; }); }));
+    const chips=Object.entries(totals).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([n,c])=>`<span class="hi-chip">${n} ${c}</span>`).join('');
+    const hol=getHoliday(dt); const off=data.offdays?.global;
+    return `<div class="hi"><div class="hi-hd">
+      <span class="hi-dt">${label}${hol?` 🎌${hol}`:''} ${off?'[재량휴업]':''}</span>
+      <div class="hi-chips">${chips}</div>
+      <span class="hi-cnt">${Object.keys(totals).length}종</span>
+      <button class="hi-load" onclick="loadHist('${dt}')">불러오기</button>
+      <button class="hi-del" onclick="delHist('${dt}',event)">🗑</button>
+    </div></div>`;
+  }).join('');
+}
+function loadHist(dt){
+  curDate=dt; const p=dt.split('-'); const d=new Date(+p[0],+p[1]-1,+p[2]);
+  document.getElementById('navDt').textContent=`${d.getMonth()+1}/${d.getDate()}(${WD[d.getDay()]})`;
+  DB.dietSnacks={}; DB.overrides={}; DB.dietFork={};
+  DB.dietSnacks=JSON.parse(JSON.stringify(DB.history[dt]?.dietSnacks||{}));
+  DB.overrides=JSON.parse(JSON.stringify(DB.history[dt]?.overrides||{}));
+  DB.dietFork=JSON.parse(JSON.stringify(DB.history[dt]?.dietFork||{}));
+  getPrices().forEach(pr=>{ if(!DB.dietSnacks[pr]) DB.dietSnacks[pr]=['','','']; });
+  showPg('order'); document.querySelector('.ntab').classList.add('on');
+}
+function delHist(dt,e){ e.stopPropagation(); if(!confirm('삭제할까요?')) return; delete DB.history[dt]; saveDB(); renderHist(); }
+
+// ── 공통 ──
+function closeOv(id){ document.getElementById(id).classList.remove('on'); }
+document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('on'); }));
+
+// ── 청구서 ──────────────────────────────────────────
+let invLastSchId=null, invLastFrom=null, invLastTo=null, invMode='all';
+
+function initInvoiceControls(){
+  // 이전 선택 학교 복원 (없으면 첫 번째)
+  if(!invLastSchId && DB.schools.length) invLastSchId=DB.schools[0].id;
+  if(invLastSchId) setSchPickerValue('invSchPicker', invLastSchId);
+
+  // 날짜: 저장된 값 있으면 복원, 없으면 이번달 1일~말일
+  const fromEl=document.getElementById('invDateFrom');
+  const toEl=document.getElementById('invDateTo');
+  if(invLastFrom) fromEl.value=invLastFrom;
+  else if(!fromEl.value){
+    const today=new Date();
+    const y=today.getFullYear(), m=today.getMonth()+1;
+    fromEl.value=`${y}-${String(m).padStart(2,'0')}-01`;
+  }
+  if(invLastTo) toEl.value=invLastTo;
+  else if(!toEl.value){
+    const today=new Date();
+    const y=today.getFullYear(), m=today.getMonth()+1;
+    const lastDay=new Date(y,m,0).getDate();
+    toEl.value=`${y}-${String(m).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+  }
+}
+
+function getInvoiceData(){
+  const schId=invLastSchId;
+  const fromVal=document.getElementById('invDateFrom')?.value;
+  const toVal=document.getElementById('invDateTo')?.value;
+  const sch=DB.schools.find(s=>s.id===schId);
+  if(!sch||!fromVal||!toVal) return null;
+
+  const fromDate=new Date(fromVal);
+  const toDate=new Date(toVal);
+  if(fromDate>toDate) return null;
+
+  const days=[];
+  for(let d=new Date(fromDate); d<=toDate; d.setDate(d.getDate()+1)){
+    const wd=d.getDay();
+    if(wd===0||wd===6) continue;
+    const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const hol=getHoliday(ds);
+    const off=DB.history[ds]?.offdays?.global;
+    if(hol||off) continue;
+    const rec=DB.history[ds];
+    if(!rec) continue;
+    days.push({ds,dt:new Date(d),rec});
+  }
+
+  const year=fromDate.getFullYear(), month=fromDate.getMonth()+1;
+  return {sch,year,month,fromVal,toVal,days};
+}
+
+function updateInvTitle(){
+  const sch=DB.schools.find(s=>s.id===invLastSchId);
+  const val=document.getElementById('inv-classtype')?.value;
+  if(sch&&val){ sch.classtype=val; saveDB(); }
+  const lbl=document.getElementById('inv-classtype-label');
+  if(lbl) lbl.textContent=val||'';
+}
+
+function setInvMode(mode, btn){
+  invMode=mode;
+  document.querySelectorAll('#invModeAll,#invModeRoom').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderInvoice();
+}
+
+function sendInvoiceMail(){
+  const data=getInvoiceData();
+  if(!data){ alert('학교와 날짜를 먼저 선택해주세요.'); return; }
+  const {sch,fromVal,toVal,days}=data;
+
+  // 받는사람: 늘봄실 이메일 우선, 없으면 행정실 이메일
+  const to=sch.email2||sch.email1||'';
+  if(!to){ alert(`${sch.name}에 등록된 이메일이 없어요.\n학교관리에서 이메일을 먼저 입력해주세요.`); return; }
+
+  const doctype=document.getElementById('inv-doctype')?.value?.replace(/\s/g,'')||'청구서';
+  const classtype=document.getElementById('inv-classtype')?.value||'늘봄교실';
+  const fmt=v=>{ const p=v.split('-'); return `${+p[0]}년 ${+p[1]}월 ${+p[2]}일`; };
+
+  const subject=`[${classtype} 간식 ${doctype}] ${sch.name} (${fromVal}~${toVal})`;
+
+  // 본문: 날짜별 품목/수량/금액 텍스트로 정리
+  let total=0;
+  const rows=days.map(({ds,rec})=>{
+    const p=ds.split('-');
+    const d=new Date(+p[0],+p[1]-1,+p[2]);
+    const dateLabel=`${+p[1]}/${+p[2]}(${['일','월','화','수','목','금','토'][d.getDay()]})`;
+    const overrideSnacks=sch.rooms[0]?rec.overrides?.[sch.rooms[0].id]?.snacks:null;
+    const snacks=overrideSnacks||rec.dietSnacks?.[sch.price]||rec.dietSnacks?.[String(sch.price)]||[];
+    let qty=0;
+    sch.rooms.forEach(r=>{ qty+=rec.overrides?.[r.id]?.qty??r.qty; });
+    if(!qty) return null;
+    const amt=qty*sch.price;
+    total+=amt;
+    const items=snacks.filter(x=>x).join(', ')||'-';
+    return `  ${dateLabel}  ${items}  ${qty}명 × ${sch.price.toLocaleString()}원 = ${amt.toLocaleString()}원`;
+  }).filter(Boolean);
+
+  const body=[
+    `${sch.name} 담당자님, 안녕하세요.`,
+    `시선홀푸드입니다.`,
+    ``,
+    `${fmt(fromVal)} ~ ${fmt(toVal)} 기간의 ${classtype} 간식 ${doctype}을 보내드립니다.`,
+    ``,
+    `─────────────────────────`,
+    ...rows,
+    `─────────────────────────`,
+    `합계: ${total.toLocaleString()}원`,
+    ``,
+    `계좌: 국민은행 599701-04-339403 (이성규-시선홀푸드)`,
+    `문의: 010-3406-2022`,
+    ``,
+    `감사합니다.`,
+  ].join('\n');
+
+  const mailto=`mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href=mailto;
+}
+
+
+
+function renderInvoice(){
+  // 날짜 저장
+  const fromNow=document.getElementById('invDateFrom')?.value;
+  const toNow=document.getElementById('invDateTo')?.value;
+  if(fromNow) invLastFrom=fromNow;
+  if(toNow) invLastTo=toNow;
+
+  const data=getInvoiceData();
+
+  // 날짜 항상 표시 (데이터 없어도)
+  const fromVal=document.getElementById('invDateFrom')?.value;
+  const toVal=document.getElementById('invDateTo')?.value;
+  const daterangeEl=document.getElementById('inv-daterange');
+  if(daterangeEl && fromVal && toVal){
+    const fmt=v=>{ const p=v.split('-'); return `${p[0]}/${p[1]}/${p[2]}`; };
+    daterangeEl.textContent=`${fmt(fromVal)} ~ ${fmt(toVal)}`;
+  }
+
+  if(!data){ document.getElementById('invTbody').innerHTML=''; document.getElementById('invTfoot').innerHTML=''; document.getElementById('invGrandLabel').textContent='0'; return; }
+  const {sch,year,month,days}=data;
+
+  // 학교명 업데이트 (거래처 칸에 표시)
+  const clientEl=document.getElementById('inv-client');
+  if(clientEl) clientEl.textContent=sch.name;
+
+  // 제목 드롭다운 & 오른쪽 라벨 칸 동기화
+  const classtypeSel=document.getElementById('inv-classtype');
+  if(classtypeSel && sch.classtype) classtypeSel.value=sch.classtype;
+  const lbl=document.getElementById('inv-classtype-label');
+  if(lbl) lbl.textContent=sch.classtype||'늘봄교실';
+
+  if(!days.length){
+    document.getElementById('invTbody').innerHTML=`<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--mu)">해당 기간에 저장된 발주 기록이 없습니다</td></tr>`;
+    document.getElementById('invTfoot').innerHTML='';
+    document.getElementById('invGrandLabel').textContent='0';
+    return;
+  }
+
+  let tbody=''; let grandTotal=0; let grandQty=0;
+
+  // 실별 시트 컨테이너 초기화 (기존 동적 시트 제거)
+  document.querySelectorAll('.inv-sheet-room').forEach(el=>el.remove());
+  const mainSheet=document.getElementById('invSheet');
+
+  if(invMode==='room'){
+    // ── 실별 모드: 실마다 완전히 독립된 inv-sheet 생성 ──
+    mainSheet.style.display='none'; // 기본 시트 숨김
+
+    sch.rooms.forEach((room)=>{
+      let roomTotal=0, roomQty=0, roomTbody='';
+
+      days.forEach(({ds,rec})=>{
+        const p=ds.split('-');
+        const d=new Date(+p[0],+p[1]-1,+p[2]);
+        const dateLabel=`${+p[1]}/${+p[2]}(${WD[d.getDay()]})`;
+        const overrideSnacks=rec.overrides?.[room.id]?.snacks;
+        const snacks=overrideSnacks||rec.dietSnacks?.[sch.price]||rec.dietSnacks?.[String(sch.price)]||['','',''];
+        const s1=snacks[0]||'', s2=snacks[1]||'', s3=snacks[2]||'';
+        const qty=rec.overrides?.[room.id]?.qty??room.qty;
+        if(!qty) return;
+        const amount=qty*sch.price;
+        roomTotal+=amount; roomQty+=qty;
+        grandTotal+=amount; grandQty+=qty;
+        roomTbody+=`<tr>
+          <td style="white-space:nowrap;text-align:center">${dateLabel}</td>
+          <td>${s1}</td><td>${s2}</td><td>${s3}</td>
+          <td style="text-align:center">${qty}</td>
+          <td style="text-align:right">${sch.price.toLocaleString()}</td>
+          <td style="text-align:right;font-weight:700">${amount.toLocaleString()}</td>
+        </tr>`;
+      });
+
+      if(!roomQty) return;
+
+      // 공급자 정보 HTML 복제 (id 제거해서 충돌 방지)
+      const infoClone=document.getElementById('invInfoTable').cloneNode(true);
+      infoClone.removeAttribute('id');
+      // input 값 동기화
+      ['inv-company','inv-ceo','inv-biz','inv-tel','inv-biztype','inv-bizitem','inv-addr','inv-account'].forEach(id=>{
+        const orig=document.getElementById(id);
+        const copy=infoClone.querySelector(`#${id}`);
+        if(orig&&copy){ copy.value=orig.value; copy.removeAttribute('id'); }
+      });
+      // 거래처 학교명 + 실명
+      infoClone.querySelectorAll('.inv-client-cell').forEach(el=>{
+        el.textContent=`${sch.name} ${room.name}`;
+        el.removeAttribute('id');
+      });
+      // 일자
+      const drEl=infoClone.querySelector('#inv-daterange')||infoClone.querySelector('[id*="daterange"]');
+      if(drEl){ drEl.textContent=document.getElementById('inv-daterange').textContent; drEl.removeAttribute('id'); }
+
+      // 제목 복제
+      const titleClone=document.querySelector('.inv-title-area').cloneNode(true);
+      titleClone.querySelectorAll('select').forEach(sel=>{ sel.removeAttribute('onchange'); });
+
+      // 새 시트 생성
+      const sheet=document.createElement('div');
+      sheet.className='inv-sheet inv-sheet-room print-active';
+      sheet.innerHTML=`
+        <div class="inv-title-area" style="text-align:center;margin-bottom:10px">
+          <div class="inv-main-title" style="font-size:22px;font-weight:900;letter-spacing:6px;color:#1a1814;display:flex;align-items:center;justify-content:center">
+            ${document.getElementById('inv-classtype').value}&nbsp;간식&nbsp;&nbsp;&nbsp;청&nbsp;구&nbsp;서
+          </div>
+        </div>
+        <div style="margin-bottom:12px"></div>
+        <table class="inv-table">
+          <thead><tr>
+            <th style="width:80px">날&nbsp;&nbsp;짜</th>
+            <th>품&nbsp;목&nbsp;명(1)</th><th>품&nbsp;목&nbsp;명(2)</th><th>품&nbsp;목&nbsp;명(3)</th>
+            <th style="width:50px">수&nbsp;량</th>
+            <th style="width:70px">단&nbsp;가</th>
+            <th style="width:80px">합&nbsp;계</th>
+          </tr></thead>
+          <tbody>${roomTbody}</tbody>
+          <tfoot><tr class="inv-total-row">
+            <td colspan="4" style="text-align:right;font-weight:900">합&nbsp;&nbsp;계</td>
+            <td style="text-align:center;font-weight:900">${roomQty}</td>
+            <td></td>
+            <td style="text-align:right;font-weight:900">${roomTotal.toLocaleString()}</td>
+          </tr></tfoot>
+        </table>
+        <div class="inv-total-label">합계금 &nbsp;&nbsp;&nbsp; <span style="font-size:14px;font-weight:900">${roomTotal.toLocaleString()}</span> 원</div>
+      `;
+      // 공급자 정보 테이블 삽입 (제목 다음)
+      sheet.insertBefore(infoClone, sheet.querySelector('table'));
+      document.getElementById('invBody').appendChild(sheet);
+    });
+
+  } else {
+    // ── 전체 합산 모드 ──
+    mainSheet.style.display='';
+
+    days.forEach(({ds,rec})=>{
+      const p=ds.split('-');
+      const d=new Date(+p[0],+p[1]-1,+p[2]);
+      const dateLabel=`${+p[1]}/${+p[2]}(${WD[d.getDay()]})`;
+      const firstRoom=sch.rooms[0];
+      const overrideSnacks=firstRoom ? rec.overrides?.[firstRoom.id]?.snacks : null;
+      const snacks=overrideSnacks||rec.dietSnacks?.[sch.price]||rec.dietSnacks?.[String(sch.price)]||['','',''];
+      const s1=snacks[0]||'', s2=snacks[1]||'', s3=snacks[2]||'';
+      let dayQty=0;
+      sch.rooms.forEach(r=>{ dayQty+=rec.overrides?.[r.id]?.qty??r.qty; });
+      if(!dayQty) return;
+      const amount=dayQty*sch.price;
+      grandTotal+=amount; grandQty+=dayQty;
+      tbody+=`<tr class="inv-date-row">
+        <td style="white-space:nowrap;text-align:center">${dateLabel}</td>
+        <td>${s1}</td><td>${s2}</td><td>${s3}</td>
+        <td style="text-align:center">${dayQty}</td>
+        <td style="text-align:right">${sch.price.toLocaleString()}</td>
+        <td style="text-align:right">${amount.toLocaleString()}</td>
+      </tr>`;
+    });
+
+    tbody+=`<tr class="inv-total-row">
+      <td colspan="4" style="text-align:right;font-weight:900">합&nbsp;&nbsp;계</td>
+      <td style="text-align:center;font-weight:900">${grandQty}</td>
+      <td></td>
+      <td style="text-align:right;font-weight:900">${grandTotal.toLocaleString()}</td>
+    </tr>`;
+
+    document.getElementById('invTbody').innerHTML=tbody;
+    document.getElementById('invTfoot').innerHTML='';
+    document.getElementById('invGrandLabel').textContent=grandTotal.toLocaleString();
+  }
+}
+
+function printInvoice(){
+  if(!document.getElementById('pg-invoice').classList.contains('on')) return;
+  // 인쇄 시: 실별이면 room sheet들만 활성, 아니면 mainSheet만 활성
+  if(invMode==='room'){
+    document.getElementById('invSheet').classList.remove('print-active');
+    document.querySelectorAll('.inv-sheet-room').forEach(el=>el.classList.add('print-active'));
+  } else {
+    document.getElementById('invSheet').classList.add('print-active');
+    document.querySelectorAll('.inv-sheet-room').forEach(el=>el.classList.remove('print-active'));
+  }
+  window.print();
+  // 인쇄 후 복원
+  setTimeout(()=>{
+    document.getElementById('invSheet').classList.remove('print-active');
+  }, 500);
+}
+
+function exportInvoiceExcel(){
+  const data=getInvoiceData();
+  if(!data){ alert('청구서 데이터가 없습니다'); return; }
+  const {sch,fromVal,toVal,days}=data;
+
+  let csv='\uFEFF';
+  csv+=`늘봄교실 간식 청구서,${sch.name},${fromVal} ~ ${toVal}\n`;
+  csv+=`날짜,품목명(1),품목명(2),품목명(3),수량,단가(원),합계(원)\n`;
+
+  days.forEach(({ds,rec})=>{
+    const p=ds.split('-');
+    const dateLabel=`${+p[0]}/${+p[1]}/${+p[2]}`;
+    const snacks=rec.dietSnacks?.[sch.price]||['','',''];
+    let dayQty=0;
+    sch.rooms.forEach(r=>{
+      const qty=rec.overrides?.[r.id]?.qty??r.qty;
+      dayQty+=qty;
+    });
+    if(!dayQty) return;
+    const amount=dayQty*sch.price;
+    csv+=`"${dateLabel}","${snacks[0]||''}","${snacks[1]||''}","${snacks[2]||''}",${dayQty},${sch.price},${amount}\n`;
+  });
+
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`청구서_${sch.name}_${fromVal}~${toVal}.csv`;
+  a.click();
+}
+
+// showPg에 invoice 추가
+const _origShowPg=showPg;
+function showPg(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  if(btn) btn.classList.add('on');
+  if(id==='calendar'){ fillCalSel(); renderCal(); }
+  if(id==='schools') renderSchList();
+  if(id==='history') renderHist();
+  if(id==='order'){ renderDietList(); renderTable(); }
+  if(id==='invoice'){ initInvoiceControls(); renderInvoice(); }
+}
+
+// ── 초기화 ──
+(async ()=>{
+  await loadDB();
+  DB.dietSnacks={}; DB.overrides={};
+  renderCourseFilters();
+  renderDietList(); renderTable();
+  document.getElementById('navDt').textContent='날짜 선택';
+  initSchPicker('calSchPicker', id=>{ calSchId=id; renderCal(); });
+  initSchPicker('invSchPicker', id=>{ invLastSchId=id; renderInvoice(); });
+})();
+</script>
+</body>
+</html>
